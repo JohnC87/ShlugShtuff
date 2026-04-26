@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PortalHub — Agent Onboarding Concept v0.4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #0f1117; min-height: 100vh; }
+
+    .concept-bar {
+      background: #0a0c12; padding: 11px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .concept-title { font-size: 12px; color: rgba(255,255,255,0.3); font-weight: 500; }
+    .concept-badge { background: rgba(21,128,61,0.2); color: #4ADE80; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+    .view-toggle { display: flex; align-items: center; justify-content: center; padding: 20px 0 24px; gap: 0; }
+    .toggle-btn {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.35); padding: 8px 24px;
+      font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+    }
+    .toggle-btn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
+    .toggle-btn:last-child { border-radius: 0 8px 8px 0; }
+    .toggle-btn.active { background: rgba(21,128,61,0.14); border-color: rgba(21,128,61,0.3); color: #4ADE80; }
+
+    .canvas { display: flex; justify-content: center; padding: 0 32px 64px; }
+    .view { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+    .view.active { display: flex; }
+    .device-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+
+    .pulse-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block;
+      animation: pd 1.3s ease-in-out infinite;
+    }
+    .pulse-dot:nth-child(2){animation-delay:.22s} .pulse-dot:nth-child(3){animation-delay:.44s}
+    @keyframes pd{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:.8;transform:scale(1.1)}}
+
+    /* ════ DESKTOP ════ */
+    .desktop-device {
+      width: 1140px; background: #fff; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 40px 100px rgba(0,0,0,0.8);
+    }
+    .browser-bar {
+      background: #efefef; height: 40px;
+      display: flex; align-items: center; padding: 0 16px; gap: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    .bdot{width:12px;height:12px;border-radius:50%}
+    .bdot.r{background:#ff5f57}.bdot.y{background:#febc2e}.bdot.g{background:#28c840}
+    .browser-url {
+      flex: 1; background: #fff; border: 1px solid #ddd; border-radius: 6px;
+      height: 24px; margin: 0 16px;
+      display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: #888;
+    }
+
+    .d-sitenav {
+      height: 60px; background: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;
+    }
+    .d-logo { font-size: 19px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
+    .d-logo span { color: #15803D; }
+    .d-nav-links { display: flex; align-items: center; gap: 28px; }
+    .d-nav-link { font-size: 14px; color: #6b7280; font-weight: 500; cursor: default; }
+    .d-nav-signin {
+      background: #fff; color: #111; border: 1.5px solid #e5e7eb;
+      border-radius: 8px; padding: 7px 16px;
+      font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer;
+    }
+
+    /* Landing */
+    .d-landing { display: flex; min-height: 560px; justify-content: center; }
+    .d-landing-left {
+      flex: 1; padding: 64px 60px; max-width: 640px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .d-landing-right {
+      width: 400px; background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+      display: flex; align-items: center; justify-content: center; padding: 48px;
+      position: relative; overflow: hidden; flex-shrink: 0;
+    }
+    .d-landing-right::before {
+      content: ''; position: absolute; width: 360px; height: 360px; border-radius: 50%;
+      background: rgba(21,128,61,0.1); top: -80px; right: -80px;
+    }
+    .d-landing-right::after {
+      content: ''; position: absolute; width: 260px; height: 260px; border-radius: 50%;
+      background: rgba(21,128,61,0.07); bottom: -60px; left: -50px;
+    }
+    .d-trust-card {
+      background: #fff; border-radius: 20px; padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1); width: 100%; position: relative; z-index: 1;
+    }
+    .d-trust-card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af; margin-bottom: 20px; }
+    .d-trust-stat { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid #f3f4f6; }
+    .d-trust-stat:last-child { padding-bottom: 0; margin-bottom: 0; border-bottom: none; }
+    .d-trust-ico { width: 40px; height: 40px; background: #f0fdf4; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .d-trust-val { font-size: 20px; font-weight: 700; color: #111; }
+    .d-trust-lbl { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+    .d-eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #15803D; margin-bottom: 14px; }
+    .d-h1 { font-size: 48px; font-weight: 800; color: #111; line-height: 1.1; letter-spacing: -2px; margin-bottom: 16px; }
+    .d-subline { font-size: 17px; color: #6b7280; line-height: 1.55; margin-bottom: 36px; max-width: 460px; }
+    .d-search-box {
+      background: #fff; border: 2px solid #e5e7eb; border-radius: 16px;
+      padding: 8px 8px 8px 22px;
+      display: flex; align-items: center; gap: 12px; max-width: 520px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07); transition: border-color 0.2s;
+    }
+    .d-search-box:focus-within { border-color: #15803D; box-shadow: 0 4px 20px rgba(21,128,61,0.12); }
+    .d-search-input {
+      flex: 1; border: none; outline: none;
+      font-size: 16px; font-family: inherit; color: #111; background: transparent; padding: 8px 0;
+    }
+    .d-search-input::placeholder { color: #aab0bc; }
+    .d-search-btn {
+      background: #15803D; color: #fff; border: none;
+      border-radius: 10px; padding: 12px 22px;
+      font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+      white-space: nowrap;
+    }
+    .d-search-btn:hover { background: #166534; }
+    .d-already-working {
+      display: flex; align-items: center; gap: 7px; margin-top: 12px; color: #9ca3af;
+    }
+    .d-already-working span { font-size: 12px; }
+    .d-trust-strip {
+      padding: 18px 60px; border-top: 1px solid #f3f4f6;
+      display: flex; gap: 36px;
+    }
+    .d-strip-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #6b7280; }
+    .d-strip-item .tick { color: #15803D; }
+
+    /* Conversation */
+    .d-convo-wrap { display: flex; flex-direction: column; height: 640px; }
+    .d-convo-header {
+      padding: 16px 40px; border-bottom: 1px solid #f0f0f0; background: #fafafa;
+      display: flex; align-items: center; flex-shrink: 0;
+    }
+    .d-convo-company { display: flex; align-items: center; gap: 12px; }
+    .d-convo-co-ico {
+      width: 36px; height: 36px; background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; color: #fff;
+      box-shadow: 0 3px 10px rgba(21,128,61,0.25); font-size: 18px;
+    }
+    .d-convo-co-name { font-size: 15px; font-weight: 600; color: #111; }
+    .d-convo-co-type { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+
+    .d-thread {
+      flex: 1; overflow-y: auto; padding: 24px 40px;
+      display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth;
+      background:
+        radial-gradient(ellipse at 10% 8%, rgba(220,252,231,0.45) 0%, transparent 50%),
+        radial-gradient(ellipse at 88% 92%, rgba(209,250,229,0.28) 0%, transparent 45%),
+        linear-gradient(160deg, #fafefe 0%, #f9fafb 100%);
+    }
+
+    /* Agent message */
+    .d-agent-msg { display: flex; align-items: flex-start; gap: 12px; max-width: 72%; }
+    .d-agent-avatar {
+      width: 32px; height: 32px;
+      background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%);
+      border-radius: 9px;
+      box-shadow: 0 3px 10px rgba(21,128,61,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 2px;
+      letter-spacing: 0;
+    }
+    .d-agent-name { font-size: 11px; font-weight: 600; color: #9ca3af; margin-bottom: 4px; }
+    .d-agent-bubble {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 16px 16px 16px 4px; padding: 14px 18px;
+      font-size: 14px; color: #374151; line-height: 1.6;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 14px rgba(0,0,0,0.04);
+    }
+    .d-agent-bubble strong { color: #111; font-weight: 600; }
+    .d-agent-bubble p + p { margin-top: 8px; }
+
+    /* Agent working */
+    .d-agent-working { display: flex; align-items: flex-start; gap: 12px; }
+    .d-working-bubble {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 16px 16px 16px 4px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 8px; color: #9ca3af;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 14px rgba(0,0,0,0.04);
+    }
+    .d-working-text { font-size: 13px; font-style: italic; }
+
+    /* Customer message */
+    .d-customer-msg { display: flex; justify-content: flex-end; }
+    .d-customer-bubble {
+      background: linear-gradient(135deg, #1a9050 0%, #15803D 100%);
+      border: none;
+      border-radius: 16px 16px 4px 16px; padding: 12px 18px;
+      font-size: 14px; color: #fff; font-weight: 500; max-width: 60%;
+      box-shadow: 0 2px 8px rgba(21,128,61,0.22);
+    }
+
+    /* Quick replies */
+    .d-replies-row { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-right: 2px; }
+    .d-quick-btn {
+      background: #fff; border: 1.5px solid #15803D; color: #15803D;
+      border-radius: 20px; padding: 8px 18px;
+      font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+      transition: background 0.15s, opacity 0.2s;
+    }
+    .d-quick-btn:hover { background: #f0fdf4; }
+    .d-quick-sec { border-color: #d1d5db; color: #6b7280; }
+    .d-quick-sec:hover { background: #f9fafb; }
+    .d-quick-btn.d-selected { background: #15803D; color: #fff; border-color: #15803D; cursor: default; pointer-events: none; }
+    .d-quick-btn.d-selected::before { content: '✓ '; }
+    .d-quick-btn.d-faded { opacity: 0.25; cursor: default; pointer-events: none; }
+    .d-replies-label { font-size: 10px; color: #9ca3af; text-align: right; margin-top: 4px; font-style: italic; letter-spacing: 0.3px; }
+
+    /* Persistent input bar */
+    .d-input-bar {
+      padding: 10px 40px 14px; border-top: 1px solid #f0f0f0; background: #fff;
+      display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+    }
+    .d-chat-input {
+      flex: 1; border: 1.5px solid #e5e7eb; border-radius: 24px;
+      padding: 10px 18px; font-size: 14px; font-family: inherit; outline: none;
+      background: #f9fafb; color: #111; transition: border-color 0.2s, background 0.2s;
+    }
+    .d-chat-input:disabled { color: #9ca3af; background: #f9fafb; cursor: default; }
+    .d-chat-input:not(:disabled) { background: #fff; border-color: #d1d5db; }
+    .d-chat-input:not(:disabled):focus { border-color: #15803D; box-shadow: 0 0 0 3px rgba(21,128,61,0.08); }
+    .d-chat-send {
+      background: #15803D; color: #fff; border: none; border-radius: 50%;
+      width: 38px; height: 38px; font-size: 16px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: opacity 0.2s;
+    }
+    .d-chat-send:disabled { background: #e5e7eb; color: #9ca3af; cursor: default; }
+
+    /* Customer bubble type distinction */
+    .d-customer-bubble.d-typed { background: linear-gradient(135deg, #166534 0%, #14532d 100%); }
+    .d-typed-label { font-size: 10px; color: #9ca3af; text-align: right; margin-bottom: 3px; font-style: italic; }
+
+    /* Cards */
+    .d-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+      overflow: hidden; margin-top: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .d-card-head {
+      background: #f9fafb; padding: 9px 16px; border-bottom: 1px solid #f0f0f0;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: #9ca3af;
+    }
+    .d-card-row {
+      padding: 10px 16px; display: flex; align-items: flex-start; justify-content: space-between;
+      border-bottom: 1px solid #f9fafb; font-size: 13px; gap: 16px;
+    }
+    .d-card-row:last-child { border-bottom: none; }
+    .d-card-label { color: #6b7280; white-space: nowrap; }
+    .d-card-value { font-weight: 500; color: #111; text-align: right; }
+    .d-card-tag {
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+      white-space: nowrap;
+    }
+    .tag-food { background: #fef3c7; color: #92400e; }
+    .tag-office { background: #ede9fe; color: #5b21b6; }
+    .tag-venue { background: #dbeafe; color: #1e40af; }
+    .tag-kitchen { background: #fce7f3; color: #9d174d; }
+    .tag-new { background: #dcfce7; color: #15803D; }
+    .tag-existing { background: #fef9c3; color: #92400e; }
+
+    /* Selectable location cards */
+    .d-loc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .d-loc-card {
+      background: #fff; border: 2px solid #15803D; border-radius: 12px;
+      padding: 14px 16px; cursor: pointer; position: relative;
+      transition: all 0.18s; box-shadow: 0 1px 4px rgba(21,128,61,0.1);
+    }
+    .d-loc-card:hover { box-shadow: 0 4px 14px rgba(21,128,61,0.15); transform: translateY(-1px); }
+    .d-loc-card.deselected {
+      border-color: #e5e7eb; opacity: 0.5; box-shadow: none;
+    }
+    .d-loc-card.deselected:hover { opacity: 0.7; transform: none; }
+    .d-loc-check {
+      position: absolute; top: 12px; right: 12px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #15803D; display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s;
+    }
+    .d-loc-check::after {
+      content: ''; width: 6px; height: 10px;
+      border: 2px solid #fff; border-top: none; border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+    .d-loc-card.deselected .d-loc-check {
+      background: #e5e7eb;
+    }
+    .d-loc-card.deselected .d-loc-check::after { border-color: #9ca3af; }
+    .d-loc-name { font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 3px; padding-right: 28px; }
+    .d-loc-addr { font-size: 12px; color: #6b7280; margin-bottom: 8px; line-height: 1.4; }
+    .d-loc-confirm {
+      margin-top: 14px; width: 100%; padding: 11px;
+      background: #15803D; color: #fff; border: none; border-radius: 9px;
+      font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .d-loc-confirm:hover { background: #166534; }
+
+    /* Site reveal cards */
+    @keyframes siteReveal {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .d-site-reveal {
+      display: flex; gap: 10px; margin: 4px 0 4px 42px;
+      animation: siteReveal 0.35s ease both;
+    }
+    .d-site-card-new {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 12px 14px; flex: 1; border-left: 3px solid #15803d;
+    }
+    .d-scn-head {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+      font-size: 13px; font-weight: 700; color: #111827;
+    }
+    .d-scn-insight {
+      font-size: 13px; color: #15803d; font-weight: 500;
+      display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px;
+    }
+    .d-scn-ico { flex-shrink: 0; margin-top: 1px; }
+    .d-scn-config {
+      font-size: 11px; color: #9ca3af; letter-spacing: 0.02em;
+    }
+
+    /* Proposal */
+    .d-proposal {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+      overflow: hidden; margin-top: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .d-prop-head {
+      background: #15803D; padding: 20px 24px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .d-prop-head-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .d-prop-head-sub { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+    .d-prop-total-label { font-size: 12px; color: rgba(255,255,255,0.6); text-align: right; margin-bottom: 3px; }
+    .d-prop-amount { font-size: 30px; font-weight: 800; color: #fff; line-height: 1; }
+    .d-prop-per { font-size: 13px; color: rgba(255,255,255,0.65); }
+    .d-prop-row {
+      padding: 12px 24px; display: flex; align-items: flex-start; gap: 12px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .d-prop-row:last-child { border-bottom: none; }
+    .d-prop-site { flex: 1; }
+    .d-prop-site-name { font-size: 13px; font-weight: 600; color: #111; }
+    .d-prop-site-detail { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+    .d-prop-price { font-size: 15px; font-weight: 700; color: #15803D; white-space: nowrap; }
+    .d-prop-note { font-size: 11px; color: #9ca3af; text-align: right; margin-top: 2px; }
+
+    .d-nego-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+      padding: 18px 20px; margin-top: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .d-nego-new-price { font-size: 26px; font-weight: 800; color: #15803D; margin-bottom: 4px; }
+    .d-nego-saving { font-size: 13px; color: #6b7280; }
+    .d-nego-saving strong { color: #15803D; }
+    .d-nego-reason { font-size: 12px; color: #9ca3af; margin-top: 6px; padding-top: 6px; border-top: 1px solid #f3f4f6; }
+
+    /* Done */
+    .d-done-area {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 80px 60px; text-align: center; background: #fafafa; min-height: 580px;
+    }
+    .d-done-icon {
+      width: 76px; height: 76px; background: #f0fdf4; border: 2px solid #bbf7d0;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin-bottom: 24px;
+    }
+    .d-done-h { font-size: 36px; font-weight: 800; color: #111; letter-spacing: -1px; margin-bottom: 10px; }
+    .d-done-s { font-size: 16px; color: #6b7280; line-height: 1.6; max-width: 440px; margin-bottom: 32px; }
+    .d-done-btn {
+      background: #15803D; color: #fff; border: none; border-radius: 10px; padding: 14px 36px;
+      font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+    }
+
+    /* ════ MOBILE ════ */
+    .mobile-device {
+      width: 390px; height: 844px; background: #fff; border-radius: 48px; overflow: hidden;
+      box-shadow: 0 0 0 10px #252525, 0 0 0 12px #1c1c1c, 0 40px 80px rgba(0,0,0,0.7);
+    }
+    .m-statusbar {
+      height: 44px; background: #fff;
+      display: flex; align-items: center; justify-content: space-between; padding: 12px 28px 0;
+    }
+    .m-statusbar .mtime { font-size: 15px; font-weight: 700; color: #111; }
+    .m-statusbar .micons { font-size: 11px; color: #111; display: flex; gap: 4px; align-items: center; }
+    .m-sitenav {
+      height: 50px; background: #fff; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;
+    }
+    .m-logo { font-size: 16px; font-weight: 800; color: #111; letter-spacing: -0.3px; }
+    .m-logo span { color: #15803D; }
+    .m-signin-link { font-size: 13px; font-weight: 500; color: #15803D; }
+    .m-page { height: calc(844px - 44px - 50px); display: flex; flex-direction: column; overflow: hidden; }
+
+    .m-landing-content { flex: 1; overflow-y: auto; background: #fff; }
+    .m-hero-band { background: linear-gradient(170deg, #f0fdf4 0%, #fff 60%); padding: 28px 22px 24px; }
+    .m-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #15803D; margin-bottom: 10px; }
+    .m-h1 { font-size: 26px; font-weight: 800; color: #111; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .m-sub { font-size: 14px; color: #6b7280; line-height: 1.55; margin-bottom: 22px; }
+    .m-search-field {
+      background: #fff; border: 2px solid #e5e7eb; border-radius: 14px;
+      padding: 13px 16px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06); cursor: pointer; transition: border-color 0.2s;
+    }
+    .m-search-field:hover { border-color: #bbf7d0; }
+    .m-search-ico { font-size: 16px; color: #9ca3af; }
+    .m-search-ph { font-size: 15px; color: #9ca3af; flex: 1; }
+    .m-ip-hint { display: flex; align-items: center; gap: 6px; margin-top: 9px; color: #9ca3af; }
+    .m-ip-hint span { font-size: 11px; }
+    .m-feature-list { padding: 16px 22px; display: flex; flex-direction: column; gap: 10px; }
+    .m-feat { display: flex; align-items: flex-start; gap: 12px; background: #f9fafb; border-radius: 12px; padding: 14px; }
+    .m-feat-ico { width: 34px; height: 34px; background: #f0fdf4; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .m-feat-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px; }
+    .m-feat-desc { font-size: 12px; color: #6b7280; line-height: 1.4; }
+    .m-trust-pills { padding: 14px 22px 24px; display: flex; flex-wrap: wrap; gap: 7px; }
+    .m-pill { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 20px; padding: 5px 10px; font-size: 11px; font-weight: 500; color: #166534; }
+
+    /* Mobile convo */
+    .m-convo-header {
+      padding: 12px 18px 10px; border-bottom: 1px solid #f0f0f0; background: #fafafa;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .m-convo-ico { width: 30px; height: 30px; background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 2px 6px rgba(21,128,61,0.22); }
+    .m-convo-ico .material-icons { font-size: 16px; }
+    .m-convo-title { font-size: 13px; font-weight: 600; color: #111; }
+    .m-convo-sub { font-size: 11px; color: #9ca3af; }
+    .m-thread { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; }
+
+    .m-agent-row { display: flex; align-items: flex-start; gap: 8px; }
+    .m-agent-av {
+      width: 26px; height: 26px;
+      background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%);
+      border-radius: 7px;
+      box-shadow: 0 2px 6px rgba(21,128,61,0.22), inset 0 1px 0 rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 2px;
+    }
+    .m-agent-name-lbl { font-size: 10px; font-weight: 600; color: #9ca3af; margin-bottom: 3px; }
+    .m-bubble-agent {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 14px 14px 14px 4px; padding: 11px 14px;
+      font-size: 13px; color: #374151; line-height: 1.55; max-width: calc(100% - 38px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 3px 10px rgba(0,0,0,0.04);
+    }
+    .m-bubble-agent strong { color: #111; font-weight: 600; }
+    .m-working-row { display: flex; align-items: flex-start; gap: 8px; }
+    .m-working-bubble {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 14px 14px 14px 4px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 7px; color: #9ca3af;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 3px 10px rgba(0,0,0,0.04);
+    }
+    .m-working-text { font-size: 12px; font-style: italic; }
+    .m-customer-row { display: flex; justify-content: flex-end; }
+    .m-bubble-customer {
+      background: linear-gradient(135deg, #1a9050 0%, #15803D 100%);
+      border: none;
+      border-radius: 14px 14px 4px 14px; padding: 10px 14px;
+      font-size: 13px; color: #fff; font-weight: 500; max-width: 75%;
+      box-shadow: 0 2px 6px rgba(21,128,61,0.22);
+    }
+
+    .m-replies { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .m-qbtn { background: #fff; border: 1.5px solid #15803D; color: #15803D; border-radius: 16px; padding: 7px 14px; font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; }
+    .m-qbtn:hover { background: #f0fdf4; }
+    .m-qbtn.sec { border-color: #d1d5db; color: #6b7280; }
+
+    .m-mini-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+    .m-mini-row { padding: 9px 13px; display: flex; justify-content: space-between; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+    .m-mini-row:last-child { border-bottom: none; }
+    .m-mini-label { color: #6b7280; }
+    .m-mini-val { font-weight: 500; color: #111; }
+
+    .m-quote-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-top: 8px; }
+    .m-quote-head { background: #15803D; padding: 14px 16px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .m-quote-title { font-size: 14px; font-weight: 700; color: #fff; }
+    .m-quote-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .m-quote-total { font-size: 22px; font-weight: 800; color: #fff; }
+    .m-quote-per { font-size: 11px; color: rgba(255,255,255,0.7); text-align: right; }
+
+    .m-chat-bar { padding: 10px 14px 14px; border-top: 1px solid #f0f0f0; background: #fff; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .m-chat-input { flex: 1; border: 1.5px solid #e5e7eb; border-radius: 20px; padding: 10px 16px; font-size: 14px; font-family: inherit; outline: none; }
+    .m-chat-input:focus { border-color: #15803D; }
+    .m-chat-send { background: #15803D; color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .m-done-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 36px 28px; text-align: center; background: #fff; }
+    .m-done-ico { width: 64px; height: 64px; background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 18px; }
+    .m-done-h { font-size: 24px; font-weight: 800; color: #111; margin-bottom: 9px; }
+    .m-done-s { font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 24px; }
+    .m-done-btn { background: #15803D; color: #fff; border: none; border-radius: 12px; padding: 14px 28px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; }
+
+    /* Reset link */
+    .reset-link { font-size: 12px; color: rgba(255,255,255,0.25); text-decoration: underline; cursor: pointer; margin-top: 4px; }
+    .reset-link:hover { color: rgba(255,255,255,0.45); }
+  </style>
+</head>
+<body>
+
+  <div class="concept-bar">
+    <span class="concept-title">PortalHub — Agent Onboarding · Concept v0.4 · Interactive · ADG / Allied Dental Group scenario</span>
+    <span class="concept-badge">NEW DIRECTION</span>
+  </div>
+
+  <div class="view-toggle">
+    <button class="toggle-btn" id="btn-mobile" onclick="showView('mobile',this)">📱 Mobile — Residential</button>
+    <button class="toggle-btn active" id="btn-desktop" onclick="showView('desktop',this)">🖥 Desktop — Business · Multi-location</button>
+  </div>
+
+  <div class="canvas">
+
+
+    <!-- ══════════ MOBILE ══════════ -->
+    <div class="view" id="view-mobile">
+      <span class="device-label">Mobile · Residential · Address-first flow</span>
+      <div class="mobile-device">
+        <div class="m-statusbar">
+          <span class="mtime">9:41</span>
+          <span class="micons">●●● 5G 🔋</span>
+        </div>
+        <div class="m-sitenav">
+          <span class="m-logo">Waste<span>Connect</span></span>
+          <span class="m-signin-link">Sign in</span>
+        </div>
+
+        <!-- Landing -->
+        <div class="m-page" id="m-landing">
+          <div class="m-landing-content">
+            <div class="m-hero-band">
+              <div class="m-eyebrow">Chicago · IL</div>
+              <div class="m-h1">Waste collection<br>sorted in 2 minutes.</div>
+              <div class="m-sub">Enter your address. We check your street, match your neighbors' rate, and have a quote ready — no forms.</div>
+              <div class="m-search-field" onclick="mBegin()">
+                <span class="m-search-ico">📍</span>
+                <span class="m-search-ph">Your address or ZIP code</span>
+              </div>
+            </div>
+            <div class="m-feature-list">
+              <div class="m-feat"><div class="m-feat-ico">🚛</div><div><div class="m-feat-title">We know your street</div><div class="m-feat-desc">We service most Chicago neighborhoods. Instant coverage check.</div></div></div>
+              <div class="m-feat"><div class="m-feat-ico">💬</div><div><div class="m-feat-title">No forms to fill in</div><div class="m-feat-desc">Give us your address. We handle everything else and have a price in seconds.</div></div></div>
+              <div class="m-feat"><div class="m-feat-ico">✏️</div><div><div class="m-feat-title">Don't like the price? Negotiate.</div><div class="m-feat-desc">Our proposal is a starting point. Adjust before you confirm.</div></div></div>
+            </div>
+            <div class="m-trust-pills">
+              <span class="m-pill">✓ 50,000+ Chicago customers</span>
+              <span class="m-pill">✓ 2-minute sign-up</span>
+              <span class="m-pill">✓ No lock-in</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversation -->
+        <div class="m-page" id="m-convo" style="display:none">
+          <div class="m-convo-header">
+            <div class="m-convo-ico"><span class="material-icons">assistant</span></div>
+            <div>
+              <div class="m-convo-title">WasteConnect</div>
+              <div class="m-convo-sub" id="m-convo-sub">Finding the right plan for your address</div>
+            </div>
+          </div>
+          <div class="m-thread" id="m-thread"></div>
+          <div class="m-chat-bar" id="m-chat-bar">
+            <input class="m-chat-input" id="m-input" placeholder="Your address…" value="742 Evergreen Terrace, Chicago" onkeydown="if(event.key==='Enter')mSend()">
+            <button class="m-chat-send" onclick="mSend()">↑</button>
+          </div>
+        </div>
+
+        <!-- Done -->
+        <div class="m-page" id="m-done" style="display:none">
+          <div class="m-done-area">
+            <div class="m-done-ico">✓</div>
+            <div class="m-done-h">You're all set.</div>
+            <div class="m-done-s">Collection starts Wednesday, April 9th. Confirmation on its way. First bill in 30 days.</div>
+            <button class="m-done-btn">View your account</button>
+          </div>
+        </div>
+      </div>
+      <span class="reset-link" onclick="mReset()">↺ Reset</span>
+    </div>
+
+
+    <!-- ══════════ DESKTOP ══════════ -->
+    <div class="view active" id="view-desktop">
+      <span class="device-label">Desktop · Commercial · Multi-location · All 7 agents · ADG → Allied Dental Group → Allied Dental Associates LLC</span>
+
+      <div class="desktop-device">
+        <div class="browser-bar">
+          <div class="bdot r"></div><div class="bdot y"></div><div class="bdot g"></div>
+          <div class="browser-url">wasteconnect.com/business</div>
+        </div>
+
+        <!-- Landing -->
+        <div id="d-landing">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links">
+              <button class="d-nav-signin">Sign in</button>
+            </div>
+          </div>
+          <div class="d-landing">
+            <div class="d-landing-left">
+              <div class="d-eyebrow">Commercial waste collection · Chicago</div>
+              <div class="d-h1">A quote in seconds.</div>
+              <div class="d-subline">Enter your company name. We'll research your business, find your locations, figure out what each site needs, and have a tailored proposal ready — without asking you a single question.</div>
+              <div class="d-search-box">
+                <input class="d-search-input" id="d-input" placeholder="Company name or address…" value="ADG" onkeydown="if(event.key==='Enter')dStart()">
+                <button class="d-search-btn" onclick="dStart()">Get your quote →</button>
+              </div>
+            </div>
+          </div>
+          <div class="d-trust-strip">
+            <div class="d-strip-item"><span class="tick">✓</span> No forms to fill in</div>
+            <div class="d-strip-item"><span class="tick">✓</span> Multi-location support</div>
+            <div class="d-strip-item"><span class="tick">✓</span> Service tailored per site</div>
+            <div class="d-strip-item"><span class="tick">✓</span> Pricing you can negotiate</div>
+          </div>
+        </div>
+
+        <!-- Conversation -->
+        <div id="d-convo" style="display:none">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links">
+              <span class="d-nav-link">Services</span>
+              <button class="d-nav-signin">Sign in</button>
+            </div>
+          </div>
+          <div class="d-convo-header">
+            <div class="d-convo-company">
+              <div class="d-convo-co-ico"><span class="material-icons" style="font-size:18px">assistant</span></div>
+              <div>
+                <div class="d-convo-co-name" id="d-co-name">Allied Dental Group</div>
+                <div class="d-convo-co-type" id="d-co-type">Healthcare · Dental Services · Chicago, IL</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-convo-wrap">
+            <div class="d-thread" id="d-thread"></div>
+            <div class="d-input-bar">
+              <input class="d-chat-input" id="d-chat-input" placeholder="Use quick replies above, or type a message…" disabled
+                onkeydown="if(event.key==='Enter' && !this.disabled) dSendInput()">
+              <button class="d-chat-send" id="d-chat-send" onclick="dSendInput()" disabled>↑</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Done -->
+        <div id="d-done" style="display:none">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links"><button class="d-nav-signin">My account</button></div>
+          </div>
+          <div class="d-done-area">
+            <div class="d-done-icon">✓</div>
+            <div class="d-done-h">You're all set, Allied Dental.</div>
+            <div class="d-done-s">Service starts Monday, April 7th across all 4 locations at $465/month. Clinical waste collections are scheduled and compliant. Confirmation and contract summary is on its way.</div>
+            <button class="d-done-btn">Go to your account →</button>
+          </div>
+        </div>
+
+      </div><!-- /desktop-device -->
+      <span class="reset-link" onclick="dReset()">↺ Reset</span>
+    </div>
+
+  </div><!-- /canvas -->
+
+  <script>
+    /* ═══════════════════════════════════
+       SHARED
+    ═══════════════════════════════════ */
+    function showView(v, btn) {
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.toggle-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + v).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    /* ═══════════════════════════════════
+       DESKTOP — INTERACTIVE AUTO-PLAY
+    ═══════════════════════════════════ */
+    let dInputVal = '';
+    let dInputCallback = null;
+    const dThread = () => document.getElementById('d-thread');
+
+    function dScroll() {
+      const t = dThread();
+      if (t) setTimeout(() => t.scrollTop = t.scrollHeight, 60);
+    }
+
+    // dAddCustomer defined below with type support
+
+    function dAddWorking(agentName, text) {
+      const el = document.createElement('div');
+      el.className = 'd-agent-working d-wlive';
+      el.innerHTML = `
+        <div>
+          <div class="d-agent-name">${agentName}</div>
+          <div class="d-working-bubble">
+            <div class="pulse-dot"></div><div class="pulse-dot"></div><div class="pulse-dot"></div>
+            <span class="d-working-text">${text}</span>
+          </div>
+        </div>`;
+      dThread().appendChild(el);
+      dScroll();
+      return el;
+    }
+
+    function dRemoveWorking() {
+      document.querySelectorAll('.d-wlive').forEach(el => el.remove());
+    }
+
+    function dAddAgent(agentName, html) {
+      const el = document.createElement('div');
+      el.className = 'd-agent-msg';
+      el.innerHTML = `
+        <div>
+          <div class="d-agent-name">${agentName}</div>
+          <div class="d-agent-bubble">${html}</div>
+        </div>`;
+      dThread().appendChild(el);
+      dScroll();
+    }
+
+    function dAddReplies(options) {
+      const wrap = document.createElement('div');
+      const row = document.createElement('div');
+      row.className = 'd-replies-row';
+      options.forEach((o, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'd-quick-btn' + (i > 0 ? ' d-quick-sec' : '');
+        btn.textContent = o.text;
+        btn.addEventListener('click', () => dChoose(o.text, window[o.fn], row));
+        row.appendChild(btn);
+      });
+      const lbl = document.createElement('div');
+      lbl.className = 'd-replies-label';
+      lbl.textContent = 'quick reply options';
+      wrap.appendChild(row);
+      wrap.appendChild(lbl);
+      dThread().appendChild(wrap);
+      dScroll();
+    }
+
+    function dChoose(text, fn, row) {
+      // Keep buttons visible — show selected/faded state
+      if (row) {
+        row.querySelectorAll('button').forEach(btn => {
+          if (btn.textContent === text) btn.classList.add('d-selected');
+          else btn.classList.add('d-faded');
+        });
+      }
+      dAddCustomer(text, 'tapped');
+      dDisableInput();
+      setTimeout(fn, 600);
+    }
+
+    function dAddCustomer(text, type) {
+      const el = document.createElement('div');
+      el.className = 'd-customer-msg';
+      if (type === 'typed') {
+        el.innerHTML = `
+          <div>
+            <div class="d-typed-label">⌨ typed</div>
+            <div class="d-customer-bubble d-typed">${text}</div>
+          </div>`;
+      } else {
+        el.innerHTML = `<div class="d-customer-bubble">${text}</div>`;
+      }
+      dThread().appendChild(el);
+      dScroll();
+    }
+
+    function dEnableInput(suggestion, callback, placeholder) {
+      const inp = document.getElementById('d-chat-input');
+      const btn = document.getElementById('d-chat-send');
+      inp.disabled = false;
+      btn.disabled = false;
+      inp.value = suggestion || '';
+      inp.placeholder = placeholder || 'Type your message…';
+      inp.style.borderColor = '#15803D';
+      inp.style.background = '#fff';
+      dInputCallback = callback || null;
+      setTimeout(() => inp.focus(), 150);
+    }
+
+    function dDisableInput() {
+      const inp = document.getElementById('d-chat-input');
+      const btn = document.getElementById('d-chat-send');
+      inp.disabled = true;
+      btn.disabled = true;
+      inp.value = '';
+      inp.style.borderColor = '';
+      inp.style.background = '';
+      inp.placeholder = 'Use quick replies above, or type a message…';
+      dInputCallback = null;
+    }
+
+    function dSendInput() {
+      const inp = document.getElementById('d-chat-input');
+      const text = inp.value.trim();
+      if (!text || inp.disabled) return;
+      const cb = dInputCallback;
+      dDisableInput();
+      dAddCustomer(text, 'typed');
+      setTimeout(() => { if (typeof cb === 'function') cb(); else dS9(); }, 600);
+    }
+
+
+    function dStart() {
+      const input = document.getElementById('d-input');
+      dInputVal = (input.value.trim()) || 'ADG';
+      document.getElementById('d-co-name').textContent = 'Allied Dental Group';
+      document.getElementById('d-co-type').textContent = 'Healthcare · Dental Services · Chicago, IL';
+      document.getElementById('d-landing').style.display = 'none';
+      document.getElementById('d-convo').style.display = 'block';
+      document.getElementById('d-thread').innerHTML = '';
+      dDisableInput();
+      dAddCustomer(dInputVal, 'typed');
+      setTimeout(dS1, 700);
+    }
+
+    function dReset() {
+      document.getElementById('d-landing').style.display = 'block';
+      document.getElementById('d-convo').style.display = 'none';
+      document.getElementById('d-done').style.display = 'none';
+      document.getElementById('d-thread').innerHTML = '';
+      document.getElementById('d-input').value = 'Metro Hospitality Group';
+    }
+
+    // Step 1: Company Research working
+    function dS1() {
+      dAddWorking('Company Research Agent', 'Searching Illinois business registry for &ldquo;' + dInputVal + '&rdquo;…');
+      setTimeout(() => {
+        document.querySelector('.d-wlive .d-working-text').textContent = '"ADG" matched to Allied Dental Group — resolving legal entity… Found: Allied Dental Associates LLC, Chicago IL.';
+        setTimeout(dS2, 1100);
+      }, 1500);
+    }
+
+    // Step 2: Company profile result
+    function dS2() {
+      dRemoveWorking();
+      dAddAgent('Company Research Agent', `
+        <p>I matched <strong>"ADG"</strong> to Allied Dental Group — here's what we found:</p>
+        <div class="d-card">
+          <div class="d-card-head">Company Profile</div>
+          <div class="d-card-row"><span class="d-card-label">Trading name</span><span class="d-card-value">Allied Dental Group (ADG)</span></div>
+          <div class="d-card-row"><span class="d-card-label">Legal name</span><span class="d-card-value">Allied Dental Associates LLC</span></div>
+          <div class="d-card-row"><span class="d-card-label">Industry</span><span class="d-card-value">Healthcare · Dental &amp; Orthodontic Services</span></div>
+          <div class="d-card-row"><span class="d-card-label">Classification</span><span class="d-card-value">Medical — clinical waste streams required</span></div>
+          <div class="d-card-row"><span class="d-card-label">Registered</span><span class="d-card-value">Illinois, USA · Est. 2011</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Healthcare classification means I'll check each site for clinical waste, sharps disposal, and amalgam handling needs — on top of general collection. Is this the right company?</p>
+      `);
+      dAddReplies([
+        { text: 'Yes, that\'s us ✓', fn: 'dS3' },
+        { text: 'That\'s not the right company', fn: 'dSNoMatch' }
+      ]);
+    }
+
+    function dSNoMatch() {
+      dAddAgent('WasteConnect', `<p>No problem — let's try again. Type a different company name or an address and I'll search again.</p>`);
+      dEnableInput('Allied Dental Group', dSNoMatchRetry, 'Type company name or address…');
+    }
+
+    function dSNoMatchRetry() {
+      dAddWorking('Company Research Agent', 'Searching again…');
+      setTimeout(() => {
+        document.querySelector('.d-wlive .d-working-text').textContent = 'Checking public registries and business listings…';
+        setTimeout(() => {
+          dRemoveWorking();
+          dAddAgent('Company Research Agent', `
+            <p>I found a match for your search:</p>
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-top:8px;">
+              <div style="font-weight:600;color:#14532d;font-size:15px;">Allied Dental Associates LLC</div>
+              <div style="color:#374151;font-size:13px;margin-top:3px;">Legal registered name · Healthcare / Dental Services</div>
+              <div style="color:#6b7280;font-size:12px;margin-top:2px;">Illinois, United States</div>
+            </div>
+            <p style="margin-top:10px;">Is this the right company?</p>`);
+          dAddReplies([
+            { text: 'Yes, that\'s us', fn: 'dS3' },
+            { text: 'Still not right — connect me with someone', fn: 'dSEscalate' }
+          ]);
+        }, 1800);
+      }, 900);
+    }
+
+    // Step 3: Location Discovery working
+    function dS3() {
+      dAddWorking('Multi-Location Discovery Agent', 'Scanning Illinois business listings and IDPH healthcare facility records for Allied Dental Associates LLC…');
+      setTimeout(() => {
+        document.querySelector('.d-wlive .d-working-text').textContent = '2 dental clinic addresses found… checking Illinois Department of Professional Regulation… 2 more confirmed… 4 total.';
+        setTimeout(dS4, 1100);
+      }, 1700);
+    }
+
+    // Step 4: Locations found — selectable cards
+    function dS4() {
+      dRemoveWorking();
+      const locations = [
+        { id: 'loc1', name: 'Lincoln Park Dental',   addr: '2122 N Lincoln Ave, Chicago IL 60614',  tag: 'Dental + Oral Surgery', cls: 'tag-food' },
+        { id: 'loc2', name: 'Wicker Park Dental',    addr: '1530 N Milwaukee Ave, Chicago IL 60622', tag: 'General Dentistry',     cls: 'tag-kitchen' },
+        { id: 'loc3', name: 'Lakeview Orthodontics', addr: '3200 N Clark St, Chicago IL 60657',      tag: 'Orthodontics',          cls: 'tag-venue' },
+        { id: 'loc4', name: 'ADG Management Office', addr: '225 W Wacker Dr, Chicago IL 60606',      tag: 'Corporate Office',      cls: 'tag-office' },
+      ];
+
+      const el = document.createElement('div');
+      el.className = 'd-agent-msg';
+      el.innerHTML = `
+        <div>
+          <div class="d-agent-name">Multi-Location Discovery Agent</div>
+          <div class="d-agent-bubble">
+            <p>We found <strong>4 locations</strong> registered under Allied Dental Associates LLC. Select the ones that are active — deselect any that don't apply.</p>
+            <div class="d-loc-grid" id="locGrid">
+              ${locations.map(l => `
+                <div class="d-loc-card" id="${l.id}" onclick="dToggleLoc('${l.id}')">
+                  <div class="d-loc-check"></div>
+                  <div class="d-loc-name">${l.name}</div>
+                  <div class="d-loc-addr">${l.addr}</div>
+                  <span class="d-card-tag ${l.cls}">${l.tag}</span>
+                </div>`).join('')}
+            </div>
+            <button class="d-loc-confirm" id="locConfirmBtn" onclick="dConfirmLocs()">Confirm 4 locations →</button>
+          </div>
+        </div>`;
+      dThread().appendChild(el);
+      dScroll();
+    }
+
+    function dToggleLoc(id) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.classList.toggle('deselected');
+      const count = document.querySelectorAll('#locGrid .d-loc-card:not(.deselected)').length;
+      const btn = document.getElementById('locConfirmBtn');
+      if (count === 0) {
+        btn.textContent = 'Select at least one location';
+        btn.disabled = true;
+        btn.style.background = '#9ca3af';
+      } else {
+        btn.textContent = `Confirm ${count} location${count !== 1 ? 's' : ''} →`;
+        btn.disabled = false;
+        btn.style.background = '';
+      }
+    }
+
+    function dConfirmLocs() {
+      const selected = [...document.querySelectorAll('#locGrid .d-loc-card:not(.deselected)')]
+        .map(c => c.querySelector('.d-loc-name').textContent);
+      // Lock the cards
+      document.querySelectorAll('#locGrid .d-loc-card').forEach(c => {
+        c.style.cursor = 'default';
+        c.onclick = null;
+      });
+      document.getElementById('locConfirmBtn').style.display = 'none';
+      dAddCustomer(`${selected.length} location${selected.length !== 1 ? 's' : ''} confirmed ✓`, 'tapped');
+      dDisableInput();
+      setTimeout(dS5, 600);
+    }
+
+    // Step 5: Route & Address Matching
+    function dS5() {
+      dAddWorking('Address Matching Agent', 'Checking ERP coverage near 2122 N Lincoln Ave… 1530 N Milwaukee… 3200 N Clark… 225 W Wacker…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddWorking('Route &amp; Schedule Agent', 'Lincoln Park cluster identified — 4 active medical accounts on Route 9C. Confirming schedules across all 4 sites…');
+        setTimeout(dS6, 2000);
+      }, 1800);
+    }
+
+    // Step 6: Route result
+    function dS6() {
+      dRemoveWorking();
+      dAddAgent('Route &amp; Schedule Agent', `
+        <p>All 4 locations are covered. Route coverage confirmed:</p>
+        <div class="d-card">
+          <div class="d-card-head">Route Coverage</div>
+          <div class="d-card-row"><span class="d-card-label">Lincoln Park Dental</span><span class="d-card-value">Tues + Fri · Route 9C · 4 nearby medical accounts</span></div>
+          <div class="d-card-row"><span class="d-card-label">Wicker Park Dental</span><span class="d-card-value">Thursdays · Route 11A · Standard medical cadence</span></div>
+          <div class="d-card-row"><span class="d-card-label">Lakeview Orthodontics</span><span class="d-card-value">Thursdays · Route 11A · Shared run with Wicker Park</span></div>
+          <div class="d-card-row"><span class="d-card-label">ADG Management Office</span><span class="d-card-value">Wednesdays · Route 14A · Standard office collection</span></div>
+        </div>
+      `);
+      setTimeout(dS7, 600);
+    }
+
+    // Step 7: Pricing — intelligence reveal before proposal
+    function dS7() {
+      dAddWorking('Scout', 'Analyzing site profiles — healthcare operator, 4 locations, cross-referencing Illinois clinical waste regulations…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Scout', `<p>Before I build your quote — here's what I figured out about each site. You didn't tell me any of this.</p>`);
+
+        const sites = [
+          { name: 'Lincoln Park Dental',  badge: 'Dental + Oral Surgery', cls: 'tag-food',    insight: 'Oral surgery on-site — biohazard stream, amalgam collection, and sharps disposal required.',        config: '2× weekly · Sharps · Amalgam · Biohazard · General waste' },
+          { name: 'Wicker Park Dental',   badge: 'General Dentistry',     cls: 'tag-kitchen', insight: 'Standard dental clinic — sharps and amalgam collection. No surgical volume.',                        config: 'Weekly · Sharps · Amalgam · General waste' },
+          { name: 'Lakeview Orthodontics',badge: 'Orthodontics',          cls: 'tag-venue',   insight: 'Ortho-only — no amalgam, light sharps only. Sharing the Wicker Park Thursday run cuts the cost.',   config: 'Weekly (Thu) · Light sharps · General waste' },
+          { name: 'ADG Management Office',badge: 'Corporate Office',      cls: 'tag-office',  insight: 'No clinical activity detected — standard office waste profile only.',                                config: 'Weekly · 64-gal general waste' }
+        ];
+
+        sites.forEach((s, i) => {
+          setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'd-site-reveal';
+            el.innerHTML = `
+              <div class="d-site-card-new">
+                <div class="d-scn-head">
+                  ${s.name}
+                  <span class="d-card-tag ${s.cls}">${s.badge}</span>
+                </div>
+                <div class="d-scn-insight"><span class="d-scn-ico">✦</span><span>${s.insight}</span></div>
+                <div class="d-scn-config">${s.config}</div>
+              </div>`;
+            dThread().appendChild(el);
+            dScroll();
+
+            if (i === sites.length - 1) {
+              setTimeout(() => {
+                dAddAgent('Scout', `<p style="margin:0;">Does this look right? I'll build your quote once you confirm.</p>`);
+                dAddReplies([
+                  { text: 'Yes, that all looks right — build my quote', fn: 'dS7b' },
+                  { text: 'Something needs adjusting', fn: 'dS7Adjust' }
+                ]);
+              }, 600);
+            }
+          }, 500 + i * 600);
+        });
+      }, 1800);
+    }
+
+    function dS7Adjust() {
+      dEnableInput('The Wicker Park address is not active', dS7AdjustResponse);
+    }
+
+    function dS7AdjustResponse() {
+      dAddWorking('Pricing Agent', 'Noted — removing Wicker Park Dental from the configuration…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Pricing Agent', `<p>Got it — <strong>Wicker Park Dental</strong> is removed. Recalculating for 3 active locations.</p>`);
+        setTimeout(() => {
+          dAddWorking('Pricing Agent', 'Recalculating rates for 3 locations…');
+          setTimeout(dS8Adjusted, 2000);
+        }, 700);
+      }, 1400);
+    }
+
+    function dS8Adjusted() {
+      dRemoveWorking();
+      dAddAgent('Pricing Agent', `
+        <p>Here's your updated quote for 3 locations.</p>
+        <div class="d-proposal">
+          <div class="d-prop-head">
+            <div>
+              <div class="d-prop-head-title">Allied Dental Group · 3 locations</div>
+              <div class="d-prop-head-sub">Chicago · Healthcare-configured · Clinical waste included</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-total-label">Total per month</div>
+              <div class="d-prop-amount">$362</div>
+              <div class="d-prop-per">/month</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lincoln Park Dental</div>
+              <div class="d-prop-site-detail">2× weekly · 96-gal general · Sharps disposal · Amalgam collection · Biohazard stream</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$195/mo</div>
+              <div class="d-prop-note">Oral surgery rate · 3 clinical streams</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lakeview Orthodontics</div>
+              <div class="d-prop-site-detail">Weekly · 64-gal general · Light sharps disposal · Route 11A</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$115/mo</div>
+              <div class="d-prop-note">Ortho rate</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">ADG Management Office</div>
+              <div class="d-prop-site-detail">Weekly · 64-gal general · Standard office — no clinical waste</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$52/mo</div>
+              <div class="d-prop-note">Standard office rate</div>
+            </div>
+          </div>
+        </div>
+      `);
+      dAddReplies([
+        { text: 'That works — $362/month ✓', fn: 'dS10' }
+      ]);
+      dEnableInput('That still feels high — can you do better?', () => dS9Adjusted());
+    }
+
+    function dS9Adjusted() {
+      dAddWorking('Negotiation Agent', 'Checking margins for a 3-location healthcare account on Routes 9C and 11A…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Negotiation Agent', `
+          <p>Best we can do for 3 locations — consolidating the Lincoln Park clinical waste pickup with the Lakeview run brings it down:</p>
+          <div class="d-nego-card">
+            <div class="d-nego-new-price">$330/month</div>
+            <div class="d-nego-saving">Down from $362 — you save <strong>$32/month · $384/year</strong></div>
+            <div class="d-nego-reason">Clinical waste pickup consolidated across Lincoln Park + Lakeview. That's our best rate for this configuration.</div>
+          </div>
+        `);
+        dAddReplies([
+          { text: 'Yes, lock in $330/month ✓', fn: 'dS10' },
+          { text: 'Still not quite right', fn: 'dSEscalate' }
+        ]);
+      }, 2000);
+    }
+
+    function dS7b() {
+      dAddWorking('Pricing Agent', 'Calculating rates based on route data and comparable food service accounts on Route 22B…');
+      setTimeout(dS8, 2400);
+    }
+
+    // Step 8: Proposal
+    function dS8() {
+      dRemoveWorking();
+      dAddAgent('Pricing Agent', `
+        <p>Here's your quote. Each site priced for what it actually needs.</p>
+        <div class="d-proposal">
+          <div class="d-prop-head">
+            <div>
+              <div class="d-prop-head-title">Allied Dental Group · 4 locations</div>
+              <div class="d-prop-head-sub">Chicago · Healthcare-configured · Clinical waste included</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-total-label">Total per month</div>
+              <div class="d-prop-amount">$510</div>
+              <div class="d-prop-per">/month</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lincoln Park Dental</div>
+              <div class="d-prop-site-detail">2× weekly · 96-gal general · Sharps disposal · Amalgam collection · Biohazard stream</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$195/mo</div>
+              <div class="d-prop-note">Oral surgery rate · 3 clinical streams</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Wicker Park Dental</div>
+              <div class="d-prop-site-detail">Weekly · 64-gal general · Sharps disposal · Amalgam collection</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$148/mo</div>
+              <div class="d-prop-note">Standard dental rate</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lakeview Orthodontics</div>
+              <div class="d-prop-site-detail">Weekly · 64-gal general · Light sharps disposal · Shared Thursday run with Wicker Park</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$115/mo</div>
+              <div class="d-prop-note">Ortho rate · Shared route savings</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">ADG Management Office</div>
+              <div class="d-prop-site-detail">Weekly · 64-gal general · Standard office — no clinical waste</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$52/mo</div>
+              <div class="d-prop-note">Standard office rate</div>
+            </div>
+          </div>
+        </div>
+      `);
+      dAddReplies([
+        { text: 'That works — $510/month ✓', fn: 'dS10' }
+      ]);
+      dEnableInput('That feels high — can you do better?', () => dS9());
+    }
+
+    // Step 9: Negotiation
+    function dS9() {
+      dAddWorking('Negotiation Agent', 'Checking what\'s available — reviewing route margins and multi-site bundling options for this account…');
+      setTimeout(dS9b, 2200);
+    }
+
+    function dS9b() {
+      dRemoveWorking();
+      dAddAgent('Negotiation Agent', `
+        <p>Wicker Park and Lakeview are already sharing a Thursday run on Route 11A — we can extend that consolidation to the clinical waste pickup too. Best we can do for the full account:</p>
+        <div class="d-nego-card">
+          <div class="d-nego-new-price">$465/month</div>
+          <div class="d-nego-saving">Down from $510 — you save <strong>$45/month · $540/year</strong></div>
+          <div class="d-nego-reason">Consolidated clinical waste pickup across Wicker Park + Lakeview on the shared Thursday run. Lincoln Park and HQ rates unchanged.</div>
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:#6b7280;">That's the best rate for this configuration. Want to lock it in?</p>
+      `);
+      dAddReplies([
+        { text: 'Yes, lock in $465/month ✓', fn: 'dS10' },
+        { text: 'Still not quite right', fn: 'dSEscalate' }
+      ]);
+    }
+
+    function dSEscalate() {
+      dAddWorking('Escalation Agent', 'Packaging discovery brief for commercial team…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Escalation Agent', `
+          <p>Understood. I've compiled everything into a brief for our commercial team. Someone will call you within 2 business hours — they'll have all of this in front of them before they dial.</p>
+          <div class="d-card" style="margin-top:10px;">
+            <div class="d-card-head" style="background:#fef9c3;color:#92400e;">Sales Brief — sent to commercial team</div>
+            <div class="d-card-row"><span class="d-card-label">Company</span><span class="d-card-value">Allied Dental Associates LLC (trading as ADG) · Healthcare · Chicago IL</span></div>
+            <div class="d-card-row"><span class="d-card-label">Locations</span><span class="d-card-value">4 sites — dental + oral surgery, general dentistry, orthodontics, corporate office</span></div>
+            <div class="d-card-row"><span class="d-card-label">Last offer</span><span class="d-card-value">$465/month (from $510) — Route 11A clinical waste consolidation applied</span></div>
+            <div class="d-card-row"><span class="d-card-label">Sticking point</span><span class="d-card-value">Price — customer said &ldquo;still not quite right&rdquo; after counter-offer</span></div>
+            <div class="d-card-row"><span class="d-card-label">Suggested approach</span><span class="d-card-value">Extended contract term or Lincoln Park surgical waste volume discount may close this. Clinical profiles confirmed — no further discovery needed.</span></div>
+          </div>
+          <p style="margin-top:10px;font-size:12px;color:#9ca3af;">Your conversation, company profile, location details, and service configuration are all included in the brief. The rep won't need to ask you to repeat anything.</p>
+        `);
+      }, 1200);
+    }
+
+    // Step 10: Confirm
+    function dS10() {
+      setTimeout(() => {
+        document.getElementById('d-convo').style.display = 'none';
+        document.getElementById('d-done').style.display = 'block';
+      }, 600);
+    }
+
+
+    /* ═══════════════════════════════════
+       MOBILE — INTERACTIVE
+    ═══════════════════════════════════ */
+    const mThread = () => document.getElementById('m-thread');
+    let mStarted = false;
+
+    function mScroll() {
+      const t = mThread();
+      if (t) setTimeout(() => t.scrollTop = t.scrollHeight, 60);
+    }
+
+    function mAddAgent(agentName, html) {
+      const el = document.createElement('div');
+      el.className = 'm-agent-row';
+      el.innerHTML = `
+        <div>
+          <div class="m-agent-name-lbl">${agentName}</div>
+          <div class="m-bubble-agent">${html}</div>
+        </div>`;
+      mThread().appendChild(el);
+      mScroll();
+    }
+
+    function mAddWorking(text) {
+      const el = document.createElement('div');
+      el.className = 'm-working-row m-wlive';
+      el.innerHTML = `
+        <div class="m-working-bubble">
+          <div class="pulse-dot"></div><div class="pulse-dot"></div><div class="pulse-dot"></div>
+          <span class="m-working-text">${text}</span>
+        </div>`;
+      mThread().appendChild(el);
+      mScroll();
+      return el;
+    }
+
+    function mRemoveWorking() {
+      document.querySelectorAll('.m-wlive').forEach(el => el.remove());
+    }
+
+    function mAddCustomer(text) {
+      const el = document.createElement('div');
+      el.className = 'm-customer-row';
+      el.innerHTML = `<div class="m-bubble-customer">${text}</div>`;
+      mThread().appendChild(el);
+      mScroll();
+    }
+
+    function mAddReplies(options) {
+      const el = document.createElement('div');
+      el.className = 'm-replies';
+      options.forEach((o, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'm-qbtn' + (i > 0 ? ' sec' : '');
+        btn.textContent = o.text;
+        btn.addEventListener('click', () => mChoose(o.text, window[o.fn]));
+        el.appendChild(btn);
+      });
+      mThread().appendChild(el);
+      mScroll();
+    }
+
+    function mChoose(text, fn) {
+      document.querySelectorAll('.m-replies').forEach(el => el.remove());
+      mAddCustomer(text);
+      setTimeout(fn, 500);
+    }
+
+    function mBegin() {
+      document.getElementById('m-landing').style.display = 'none';
+      document.getElementById('m-convo').style.display = 'flex';
+      mAddAgent('WasteConnect', 'Hi! Enter your address and we\'ll check what\'s available on your street — no forms, just your address.');
+      setTimeout(() => document.getElementById('m-input').focus(), 100);
+    }
+
+    function mSend() {
+      if (mStarted) return;
+      const input = document.getElementById('m-input');
+      const val = input.value.trim();
+      if (!val) return;
+      mStarted = true;
+      document.getElementById('m-chat-bar').style.display = 'none';
+      mAddCustomer(val);
+      setTimeout(mS1, 600);
+    }
+
+    function mS1() {
+      mAddWorking('Looking up your address…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Address Agent', 'Found it — <strong>742 Evergreen Terrace, Chicago, IL 60614</strong>. Is that right?');
+        mAddReplies([
+          { text: 'Yes, that\'s it ✓', fn: 'mS2' },
+          { text: 'Not quite', fn: 'mS2' }
+        ]);
+      }, 1800);
+    }
+
+    function mS2() {
+      mAddWorking('Checking your street for service coverage…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Route Agent', `
+          We already collect from <strong>Evergreen Terrace every Wednesday</strong>. Your neighbor at 744 is on our standard plan at $32/month.
+          <div class="m-mini-card">
+            <div class="m-mini-row"><span class="m-mini-label">Collection day</span><span class="m-mini-val">Wednesday</span></div>
+            <div class="m-mini-row"><span class="m-mini-label">Bin size</span><span class="m-mini-val">64-gallon</span></div>
+            <div class="m-mini-row"><span class="m-mini-label">Neighbor rate</span><span class="m-mini-val">$32/month</span></div>
+          </div>
+        `);
+        setTimeout(mS3, 500);
+      }, 2000);
+    }
+
+    function mS3() {
+      mAddWorking('Building your quote…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Pricing Agent', `
+          Here's your plan — matched to your street:
+          <div class="m-quote-card">
+            <div class="m-quote-head">
+              <div><div class="m-quote-title">Standard Residential</div><div class="m-quote-sub">64-gal · Every Wednesday</div></div>
+              <div style="text-align:right"><div class="m-quote-total">$32</div><div class="m-quote-per">/month</div></div>
+            </div>
+          </div>
+          <p style="margin-top:10px;font-size:13px;color:#6b7280;">Add recycling for +$12/month — blue bin every other Wednesday. Or confirm below.</p>
+        `);
+        mAddReplies([
+          { text: 'Sign me up — $32/month ✓', fn: 'mDone' },
+          { text: 'I\'d like to change something', fn: 'mDone' }
+        ]);
+      }, 2000);
+    }
+
+    function mDone() {
+      document.getElementById('m-convo').style.display = 'none';
+      document.getElementById('m-done').style.display = 'flex';
+    }
+
+    function mReset() {
+      mStarted = false;
+      document.getElementById('m-landing').style.display = 'flex';
+      document.getElementById('m-convo').style.display = 'none';
+      document.getElementById('m-done').style.display = 'none';
+      document.getElementById('m-thread').innerHTML = '';
+      document.getElementById('m-chat-bar').style.display = 'flex';
+      document.getElementById('m-input').value = '742 Evergreen Terrace, Chicago';
+    }
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,2930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PortalHub — Agent Onboarding Concept v0.4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Outfit', sans-serif; background: #0f1117; min-height: 100vh; }
+
+    .concept-bar {
+      background: #0a0c12; padding: 11px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .concept-title { font-size: 12px; color: rgba(255,255,255,0.3); font-weight: 500; }
+    .concept-badge { background: rgba(21,128,61,0.2); color: #4ADE80; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+    .view-toggle { display: flex; align-items: center; justify-content: center; padding: 20px 0 24px; gap: 0; }
+    .toggle-btn {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.35); padding: 8px 24px;
+      font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer;
+    }
+    .toggle-btn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
+    .toggle-btn:last-child { border-radius: 0 8px 8px 0; }
+    .toggle-btn.active { background: rgba(21,128,61,0.14); border-color: rgba(21,128,61,0.3); color: #4ADE80; }
+
+    .canvas { display: flex; justify-content: center; padding: 0 32px 64px; }
+    .view { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+    .view.active { display: flex; }
+    .device-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+
+    .pulse-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block;
+      animation: pd 1.3s ease-in-out infinite;
+    }
+    .pulse-dot:nth-child(2){animation-delay:.22s} .pulse-dot:nth-child(3){animation-delay:.44s}
+    @keyframes pd{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:.8;transform:scale(1.1)}}
+
+    /* ════ DESKTOP ════ */
+    .desktop-device {
+      width: 1140px; background: #fff; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 40px 100px rgba(0,0,0,0.8);
+    }
+    .browser-bar {
+      background: #efefef; height: 40px;
+      display: flex; align-items: center; padding: 0 16px; gap: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    .bdot{width:12px;height:12px;border-radius:50%}
+    .bdot.r{background:#ff5f57}.bdot.y{background:#febc2e}.bdot.g{background:#28c840}
+    .browser-url {
+      flex: 1; background: #fff; border: 1px solid #ddd; border-radius: 6px;
+      height: 24px; margin: 0 16px;
+      display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: #888;
+    }
+
+    .d-sitenav {
+      height: 60px; background: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;
+    }
+    .d-logo { font-size: 19px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
+    .d-logo span { color: #15803D; }
+    .d-nav-links { display: flex; align-items: center; gap: 28px; }
+    .d-nav-link { font-size: 14px; color: #6b7280; font-weight: 500; cursor: default; }
+    .d-nav-signin {
+      background: #fff; color: #111; border: 1.5px solid #e5e7eb;
+      border-radius: 8px; padding: 7px 16px;
+      font-size: 14px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer;
+    }
+
+    /* Landing */
+    .d-landing { display: flex; min-height: 500px; }
+    .d-landing-left {
+      flex: 1; padding: 60px 52px 52px; max-width: 660px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .d-landing-right {
+      width: 380px; flex-shrink: 0;
+      background: linear-gradient(148deg, #f0fdf5 0%, #e6f9ee 100%);
+      display: flex; align-items: center; justify-content: center; padding: 44px;
+      position: relative; overflow: hidden;
+    }
+    .d-landing-right::before {
+      content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%;
+      background: rgba(21,128,61,0.08); top: -80px; right: -80px;
+    }
+    .d-landing-right::after {
+      content: ''; position: absolute; width: 240px; height: 240px; border-radius: 50%;
+      background: rgba(21,128,61,0.06); bottom: -50px; left: -40px;
+    }
+    .d-trust-card {
+      background: #fff; border-radius: 18px; padding: 26px;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.09); width: 100%; position: relative; z-index: 1;
+    }
+    .d-trust-card-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin-bottom: 18px; }
+    .d-trust-stat { display: flex; align-items: center; gap: 13px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid #f3f4f6; }
+    .d-trust-stat:last-child { padding-bottom: 0; margin-bottom: 0; border-bottom: none; }
+    .d-trust-ico { width: 38px; height: 38px; background: #f0fdf5; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .d-trust-val { font-size: 20px; font-weight: 800; color: #111; line-height: 1.1; }
+    .d-trust-lbl { font-size: 11.5px; color: #9ca3af; margin-top: 1px; }
+    .d-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #15803D; margin-bottom: 12px; }
+    .d-h1 { font-size: 46px; font-weight: 800; color: #0e1a10; line-height: 1.07; letter-spacing: -2px; margin-bottom: 14px; }
+    .d-h1 em { font-style: normal; color: #15803D; }
+    .d-subline { font-size: 16px; color: #5a6460; line-height: 1.6; margin-bottom: 32px; max-width: 440px; }
+    .d-search-box {
+      background: #fff; border: 2px solid #e0e3df; border-radius: 14px;
+      padding: 7px 7px 7px 20px;
+      display: flex; align-items: center; gap: 10px; max-width: 500px;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.06); transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .d-search-box:focus-within { border-color: #15803D; box-shadow: 0 3px 16px rgba(21,128,61,0.12); }
+    .d-search-input {
+      flex: 1; border: none; outline: none;
+      font-size: 15.5px; font-family: 'Outfit', sans-serif; color: #111; background: transparent; padding: 7px 0;
+    }
+    .d-search-input::placeholder { color: #aab8b0; }
+    .d-search-btn {
+      background: #15803D; color: #fff; border: none;
+      border-radius: 9px; padding: 12px 22px;
+      font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; white-space: nowrap;
+    }
+    .d-search-btn:hover { background: #14532d; }
+    .d-search-secure { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: #9ca3af; }
+    .d-already-working {
+      display: flex; align-items: center; gap: 7px; margin-top: 12px; color: #9ca3af;
+    }
+    .d-already-working span { font-size: 12px; }
+    .d-trust-strip {
+      padding: 18px 60px; border-top: 1px solid #f3f4f6;
+      display: flex; gap: 36px;
+    }
+    .d-strip-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #6b7280; }
+    .d-strip-item .tick { color: #15803D; }
+
+    /* Conversation */
+    .d-convo-wrap { display: flex; flex-direction: row; height: 640px; }
+    .d-chat-col { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+    .d-convo-header {
+      padding: 14px 32px; border-bottom: 1px solid #f0f0f0; background: #fff;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .d-convo-company { display: flex; align-items: center; gap: 12px; }
+    .d-convo-co-ico {
+      width: 36px; height: 36px; background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; color: #fff;
+      box-shadow: 0 3px 10px rgba(21,128,61,0.25); font-size: 18px;
+    }
+    .d-convo-co-name { font-size: 15px; font-weight: 600; color: #111; }
+    .d-convo-co-type { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+    .d-nav-stepper { display: flex; align-items: center; gap: 0; }
+    .d-step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #b0b5b0; cursor: default; padding: 4px 10px; transition: color 0.2s; white-space: nowrap; }
+    .d-step.done { color: #15803D; }
+    .d-step.active { color: #111; font-weight: 600; }
+    .d-step-num { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; transition: all 0.2s; flex-shrink: 0; }
+    .d-step.done .d-step-num { background: #15803D; border-color: #15803D; color: #fff; }
+    .d-step.done .d-step-num::after { content: '✓'; font-size: 9px; }
+    .d-step.done .d-step-num span { display: none; }
+    .d-step.active .d-step-num { border-color: #111; }
+    .d-step-connector { width: 24px; height: 1.5px; background: #e5e7eb; flex-shrink: 0; }
+    .d-step-connector.done { background: #15803D; }
+
+    /* ─── ORDER SUMMARY PANEL ─── */
+    .d-order-col {
+      width: 320px; flex-shrink: 0;
+      background: #fff; border-left: 1px solid #f0f0f0;
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .d-order-col::-webkit-scrollbar { width: 3px; }
+    .d-order-col::-webkit-scrollbar-thumb { background: #d0d5d0; border-radius: 2px; }
+    .d-order-hd { padding: 16px 20px 13px; border-bottom: 1px solid #f0f1ef; flex-shrink: 0; }
+    .d-order-hd-title { font-size: 13px; font-weight: 700; color: #111; }
+    .d-order-hd-sub { font-size: 11.5px; color: #9ca3af; margin-top: 2px; }
+    .d-order-body { padding: 12px 20px; display: flex; flex-direction: column; gap: 0; }
+    /* Summary sections */
+    .d-sum-section { padding: 12px 0; border-bottom: 1px solid #f0f1ef; animation: sumIn 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+    .d-sum-section:last-child { border-bottom: none; }
+    @keyframes sumIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .d-sum-sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+    .d-sum-sec-title { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: #374151; }
+    .d-sum-icon { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #d1d5db; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #9ca3af; flex-shrink: 0; transition: all 0.25s; }
+    .d-sum-icon.done { background: #15803D; border-color: #15803D; color: #fff; }
+    .d-sum-icon.done::after { content: '✓'; font-size: 9px; font-weight: 700; }
+    .d-sum-edit-btn { font-size: 11.5px; color: #15803D; font-weight: 600; cursor: pointer; background: none; border: none; font-family: 'Outfit', sans-serif; padding: 2px 7px; border-radius: 5px; transition: background 0.14s; }
+    .d-sum-edit-btn:hover { background: #f0fdf4; }
+    .d-sum-content { font-size: 12.5px; color: #5a6460; line-height: 1.55; }
+    .d-sum-content strong { color: #111; font-weight: 600; }
+    .d-sum-location-item { display: flex; align-items: center; gap: 7px; padding: 3px 0; font-size: 12px; color: #374151; }
+    .d-sum-loc-dot { width: 6px; height: 6px; border-radius: 50%; background: #15803D; flex-shrink: 0; }
+    .d-sum-pending-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+    .d-sum-pending-dot { height: 4px; border-radius: 2px; background: #e8e9e6; }
+    /* Pricing breakdown */
+    .d-sum-price-rows { margin-top: 4px; }
+    .d-sum-price-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+    .d-sum-price-label { color: #6b7280; }
+    .d-sum-price-val { font-weight: 500; color: #374151; }
+    .d-sum-divider { border: none; border-top: 1px solid #f0f1ef; margin: 7px 0; }
+    .d-sum-total-row { display: flex; justify-content: space-between; padding: 4px 0; }
+    .d-sum-total-label { font-size: 13px; font-weight: 700; color: #111; }
+    .d-sum-total-val { font-size: 20px; font-weight: 800; color: #15803D; }
+    .d-sum-saving { font-size: 11.5px; color: #15803D; font-weight: 500; margin-top: 3px; }
+    .d-sum-cta { margin-top: 14px; width: 100%; padding: 13px; background: #15803D; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.15s; }
+    .d-sum-cta:hover:not(:disabled) { background: #14532d; }
+    .d-sum-cta:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; }
+    .d-sum-cta-sub { font-size: 11.5px; color: #9ca3af; text-align: center; margin-top: 7px; }
+    .d-sum-terms-card {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 9px;
+      padding: 13px 14px; margin-top: 16px;
+    }
+    .d-sum-terms-head {
+      font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+      color: #9ca3af; margin-bottom: 10px;
+    }
+    .d-sum-terms-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 12px; padding: 4px 0; border-bottom: 1px solid #f3f4f6;
+    }
+    .d-sum-terms-row:last-of-type { border-bottom: none; }
+    .d-sum-terms-lbl { color: #6b7280; }
+    .d-sum-terms-val { color: #111; font-weight: 600; text-align: right; max-width: 58%; }
+    .d-sum-terms-accept {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 12px; color: #374151; margin-top: 12px; padding-top: 10px;
+      border-top: 1px solid #e5e7eb; cursor: pointer; line-height: 1.5;
+    }
+    .d-sum-terms-accept input { accent-color: #15803D; margin-top: 2px; flex-shrink: 0; width: 14px; height: 14px; }
+    @keyframes termsPulse {
+      0%, 100% { border-color: #e5e7eb; box-shadow: none; }
+      50% { border-color: #15803D; box-shadow: 0 0 0 3px rgba(21,128,61,0.12); }
+    }
+    .d-terms-pulse { animation: termsPulse 0.75s ease 3; }
+    .d-sum-trust { margin-top: 13px; padding-top: 13px; border-top: 1px solid #f0f1ef; display: flex; flex-direction: column; gap: 6px; }
+    .d-sum-trust-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: #9ca3af; }
+    .d-sum-trust-ico { font-size: 13px; }
+
+    /* ─── BUSINESS PROFILE CARD ─── */
+    .d-biz-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+      overflow: hidden; margin-top: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .d-biz-card-hero {
+      background: linear-gradient(135deg, #1a9050 0%, #15803D 60%, #14532d 100%);
+      padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+    }
+    .d-biz-initials {
+      width: 48px; height: 48px; background: rgba(255,255,255,0.2);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0; letter-spacing: -0.5px;
+    }
+    .d-biz-card-name { font-size: 16px; font-weight: 700; color: #fff; }
+    .d-biz-card-legal { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .d-biz-card-body { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .d-biz-meta-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #374151; line-height: 1.4; }
+    .d-biz-meta-row .material-icons { font-size: 15px; color: #9ca3af; margin-top: 1px; flex-shrink: 0; }
+    .d-biz-meta-row.warn { color: #92400e; }
+    .d-biz-meta-row.warn .material-icons { color: #d97706; }
+    .d-biz-card-tags { padding: 10px 20px 14px; display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px solid #f3f4f6; }
+
+    /* ─── STEP-DONE DIMMING ─── */
+    .d-step-done { opacity: 0.38; transition: opacity 0.4s ease; pointer-events: none; }
+
+    .d-thread {
+      flex: 1; overflow-y: auto; padding: 24px 32px;
+      display: flex; flex-direction: column; gap: 0; scroll-behavior: smooth;
+      background: #fff;
+    }
+    .d-thread::-webkit-scrollbar { width: 4px; }
+    .d-thread::-webkit-scrollbar-track { background: transparent; }
+    .d-thread::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+
+    /* Agent message — no bubble, text sits directly on background, constrained width */
+    .d-agent-msg { display: flex; align-items: flex-start; gap: 11px; max-width: 72%; padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+    .d-agent-msg > div:last-child { flex: 1; min-width: 0; }
+    .d-agent-avatar {
+      width: 24px; height: 24px; flex-shrink: 0; margin-top: 2px;
+      background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff;
+    }
+    .d-agent-avatar.av-co { background: linear-gradient(145deg, #3b82f6, #1d4ed8); }
+    .d-agent-avatar.av-loc { background: linear-gradient(145deg, #f59e0b, #d97706); }
+    .d-agent-avatar.av-route { background: linear-gradient(145deg, #8b5cf6, #6d28d9); }
+    .d-agent-avatar.av-price { background: linear-gradient(145deg, #0a8a4a, #0d6e3a); }
+    .d-agent-avatar.av-service { background: linear-gradient(145deg, #ea580c, #c2410c); }
+    .d-agent-name {
+      font-size: 10.5px; font-weight: 700; color: #9ca3af; margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    /* Bubble is now transparent — content renders directly on white background */
+    .d-agent-bubble {
+      background: transparent; border: none; border-radius: 0; padding: 0;
+      font-size: 14px; color: #374151; line-height: 1.7;
+    }
+    .d-agent-bubble strong { color: #111; font-weight: 600; }
+    .d-agent-bubble p { margin: 0; }
+    .d-agent-bubble p + p { margin-top: 6px; }
+
+    /* Working indicator — slim, no box */
+    .d-agent-working { display: flex; align-items: flex-start; gap: 11px; padding: 10px 0; }
+    .d-working-bubble {
+      background: transparent; border: none; padding: 0;
+      display: flex; align-items: center; gap: 8px; color: #9ca3af;
+    }
+    .d-working-text { font-size: 13px; font-style: italic; color: #9ca3af; }
+
+    /* Customer message — green speech bubble restored */
+    .d-customer-msg { display: flex; justify-content: flex-end; padding: 10px 0; }
+    .d-customer-bubble {
+      background: #15803D;
+      border-radius: 16px 16px 4px 16px; padding: 10px 16px;
+      font-size: 13.5px; color: #fff; font-weight: 500; max-width: 60%;
+      box-shadow: 0 1px 4px rgba(21,128,61,0.18);
+    }
+    .d-customer-bubble.d-typed { background: #166534; }
+
+    /* Quick replies */
+    .d-replies-row { display: flex; justify-content: flex-end; gap: 7px; flex-wrap: wrap; padding: 6px 0 10px; }
+    .d-quick-btn {
+      background: #fff; border: 1.5px solid #15803D; color: #15803D;
+      border-radius: 20px; padding: 6px 15px;
+      font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer;
+      transition: background 0.12s;
+    }
+    .d-quick-btn:hover { background: #f0fdf4; }
+    .d-quick-sec { border-color: #d1d5db; color: #6b7280; }
+    .d-quick-sec:hover { background: #f9fafb; }
+    .d-quick-btn.d-selected { background: #15803D; color: #fff; border-color: #15803D; cursor: default; pointer-events: none; }
+    .d-quick-btn.d-faded { opacity: 0.22; cursor: default; pointer-events: none; }
+    .d-replies-label { display: none; }
+
+    /* Customer typed label */
+    .d-typed-label { display: none; }
+
+    /* Persistent input bar */
+    .d-input-bar {
+      padding: 10px 28px 14px; border-top: 1px solid #f0f0f0; background: #fff;
+      display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+    }
+    .d-chat-input {
+      flex: 1; border: 1.5px solid #e5e7eb; border-radius: 24px;
+      padding: 10px 18px; font-size: 14px; font-family: 'Outfit', sans-serif; outline: none;
+      background: #f9fafb; color: #111; transition: border-color 0.2s, background 0.2s;
+    }
+    .d-chat-input:disabled { color: #9ca3af; background: #f9fafb; cursor: default; }
+    .d-chat-input:not(:disabled) { background: #fff; border-color: #d1d5db; }
+    .d-chat-input:not(:disabled):focus { border-color: #15803D; box-shadow: 0 0 0 3px rgba(21,128,61,0.08); }
+    .d-chat-send {
+      background: #15803D; color: #fff; border: none; border-radius: 50%;
+      width: 38px; height: 38px; font-size: 16px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: opacity 0.2s;
+    }
+    .d-chat-send:disabled { background: #e5e7eb; color: #9ca3af; cursor: default; }
+
+    /* Customer typed label — hidden in flat layout */
+    .d-typed-label { display: none; }
+
+    /* Cards — sit cleanly on white background */
+    .d-card {
+      background: #fff; border: 1px solid #e9eaec; border-radius: 10px;
+      overflow: hidden; margin-top: 10px;
+    }
+    .d-card-head {
+      background: #f7f8f9; padding: 7px 14px; border-bottom: 1px solid #e9eaec;
+      font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: #9ca3af;
+    }
+    .d-card-row {
+      padding: 8px 14px; display: flex; align-items: flex-start; justify-content: space-between;
+      border-bottom: 1px solid #f3f4f6; font-size: 13px; gap: 14px;
+    }
+    .d-card-row:last-child { border-bottom: none; }
+    .d-card-label { color: #6b7280; white-space: nowrap; }
+    .d-card-value { font-weight: 500; color: #111; text-align: right; }
+    .d-card-tag {
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+      white-space: nowrap;
+    }
+    .tag-food { background: #fef3c7; color: #92400e; }
+    .tag-bar  { background: #f3e8ff; color: #6b21a8; }
+    .tag-office { background: #ede9fe; color: #5b21b6; }
+    .tag-venue { background: #dbeafe; color: #1e40af; }
+    .tag-kitchen { background: #fce7f3; color: #9d174d; }
+    .tag-med { background: #dbeafe; color: #1e40af; }
+    .tag-new { background: #dcfce7; color: #15803D; }
+
+    /* ─── COMPANY LOGO ─── */
+    .d-biz-logo-wrap {
+      width: 48px; height: 48px; flex-shrink: 0;
+      border-radius: 10px; overflow: hidden;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .d-biz-logo-img {
+      width: 100%; height: 100%; object-fit: contain;
+      padding: 6px; background: #fff; border-radius: 10px;
+    }
+    .d-biz-logo-fallback {
+      font-size: 15px; font-weight: 800; color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    /* ─── LOCATION MAP THUMBNAIL ─── */
+    /* consolidated multi-location map */
+    .d-all-map-wrap {
+      margin-top: 12px; border-radius: 10px; overflow: hidden;
+      border: 1px solid #e5e7eb; position: relative; height: 200px;
+    }
+    .d-all-map-wrap .leaflet-container { height: 200px; border-radius: 10px; }
+    .d-all-map-label {
+      position: absolute; top: 8px; left: 8px; z-index: 1000;
+      background: rgba(255,255,255,0.92); border-radius: 6px;
+      padding: 3px 9px; font-size: 11px; font-weight: 600; color: #374151;
+      backdrop-filter: blur(4px); pointer-events: none;
+    }
+
+    .d-rec-adjust { margin-top: 10px; font-size: 12.5px; color: #9ca3af; line-height: 1.5; }
+    .d-rec-adjust em { color: #6b7280; font-style: italic; }
+
+    /* Route card styles now handled by .d-info-card unified system above */
+    .d-route-card-name { font-size: 13px; font-weight: 700; color: #111; line-height: 1.3; }
+    .d-route-days { font-size: 12.5px; font-weight: 600; color: #374151; }
+    .d-route-days .material-icons { font-size: 13px; vertical-align: -2px; color: #9ca3af; margin-right: 3px; }
+    .d-route-note { font-size: 11.5px; color: #9ca3af; }
+
+    /* ─── SITE ANALYSIS CARDS ─── */
+    .d-sac {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 11px;
+      overflow: hidden;
+    }
+    .d-sac-header { padding: 12px 14px 9px; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid #f3f4f6; }
+    .d-sac-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .d-sac-icon .material-icons { font-size: 17px; }
+    .d-sac-icon.clr-food { background: #fef3c7; color: #92400e; }
+    .d-sac-icon.clr-kitchen { background: #fce7f3; color: #9d174d; }
+    .d-sac-icon.clr-venue { background: #dbeafe; color: #1e40af; }
+    .d-sac-icon.clr-office { background: #ede9fe; color: #5b21b6; }
+    .d-sac-name { font-size: 13px; font-weight: 700; color: #111; }
+    .d-sac-body { padding: 10px 14px; }
+    .d-sac-insight {
+      font-size: 12.5px; color: #374151; line-height: 1.55; margin-bottom: 8px;
+      padding-left: 9px; border-left: 2px solid #15803D;
+    }
+    .d-sac-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .d-sac-chip {
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+      background: #f5f5f7; color: #374151; border: 1px solid #e5e7eb;
+    }
+    .d-sac-chip.highlight { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .d-sac-schedule {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: #6b7280; margin-top: 9px; padding-top: 9px;
+      border-top: 1px solid #f3f4f6;
+    }
+    .d-sac-schedule .material-icons { font-size: 12px; color: #9ca3af; }
+    .tag-existing { background: #fef9c3; color: #92400e; }
+
+    /* ─── CONTAINER RECOMMENDATION CARDS ─── */
+    .d-container-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .d-container-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 13px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .d-container-img { height: 110px; position: relative; overflow: hidden; background: #374151; }
+    .d-container-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .d-container-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%); z-index: 1; pointer-events: none; }
+    .d-container-img-badge {
+      position: absolute; bottom: 7px; left: 9px; z-index: 2;
+      background: rgba(0,0,0,0.45); color: #fff;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .d-container-body { padding: 11px 13px; }
+    .d-container-site { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #9ca3af; margin-bottom: 3px; }
+    .d-container-name { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 4px; line-height: 1.3; }
+    .d-container-specs { font-size: 11.5px; color: #6b7280; line-height: 1.4; }
+    .d-container-freq {
+      display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+      padding: 3px 8px; background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 20px; font-size: 11px; font-weight: 600; color: #15803D;
+    }
+    .d-container-freq .material-icons { font-size: 11px; }
+    .d-container-confirm-btn {
+      width: 100%; margin-top: 14px; background: #15803D; color: #fff; border: none;
+      border-radius: 10px; padding: 12px 18px; font-size: 14px; font-weight: 600;
+      font-family: 'Outfit', sans-serif; cursor: pointer;
+    }
+    .d-container-confirm-btn:hover { background: #166534; }
+    .d-container-confirm-btn:disabled { background: #9ca3af; cursor: default; }
+
+    /* ─── ORDER PANEL: SERVICE THUMBNAILS ─── */
+    .d-order-svc-row { display: flex; align-items: center; gap: 9px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+    .d-order-svc-row:last-child { border-bottom: none; }
+    .d-order-svc-thumb {
+      width: 34px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .d-order-svc-thumb.t-dump  { background: linear-gradient(135deg, #1e293b, #475569); }
+    .d-order-svc-thumb.t-cart  { background: linear-gradient(135deg, #14532d, #16a34a); }
+    .d-order-svc-thumb.t-blue  { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
+    .d-order-svc-thumb .material-icons { font-size: 15px; color: rgba(255,255,255,0.75); }
+    .d-order-svc-info { flex: 1; min-width: 0; }
+    .d-order-svc-name { font-size: 11.5px; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .d-order-svc-sub  { font-size: 11px; color: #9ca3af; }
+
+    /* ─── MOBILE: ADDRESS MAP ─── */
+    .m-addr-map-wrap { margin-top: 10px; border-radius: 10px; overflow: hidden; height: 130px; border: 1px solid #e5e7eb; }
+    .m-addr-map-wrap .leaflet-container { height: 130px; }
+
+    /* ─── MOBILE: SERVICE RECOMMENDATION CARD ─── */
+    .m-rec-card {
+      margin-top: 10px; border: 1.5px solid #e5e7eb; border-radius: 13px;
+      overflow: hidden; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .m-rec-img {
+      height: 110px; display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .m-rec-img.s-standard { background: linear-gradient(145deg, #14532d 0%, #16a34a 100%); }
+    .m-rec-img.s-large    { background: linear-gradient(145deg, #1e3a5f 0%, #1d4ed8 100%); }
+    .m-rec-img .material-icons { font-size: 48px; color: rgba(255,255,255,0.55); }
+    .m-rec-img-label {
+      position: absolute; bottom: 8px; left: 10px;
+      background: rgba(0,0,0,0.38); color: rgba(255,255,255,0.92);
+      font-size: 9px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .m-rec-img-hint {
+      position: absolute; top: 8px; right: 10px;
+      background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.45);
+      font-size: 8px; font-weight: 500; padding: 2px 6px; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .m-rec-body { padding: 12px 14px; }
+    .m-rec-name   { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 4px; }
+    .m-rec-reason { font-size: 12px; color: #6b7280; line-height: 1.45; }
+    .m-rec-price  { font-size: 22px; font-weight: 800; color: #15803D; margin-top: 10px; letter-spacing: -0.5px; }
+    .m-rec-price span { font-size: 13px; font-weight: 500; color: #9ca3af; }
+    .m-rec-adjust { margin-top: 8px; font-size: 12px; color: #9ca3af; }
+    .m-rec-adjust span { color: #15803D; font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+    /* ─── MOBILE: MULTI-STREAM PACKAGE ─── */
+    .m-package { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .m-stream-card {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .m-stream-card.optional { border-style: dashed; opacity: 0.85; }
+    .m-stream-img {
+      width: 72px; min-height: 80px; flex-shrink: 0;
+      position: relative; overflow: hidden; background: #f9fafb;
+    }
+    .m-stream-img.s-trash   { background: #fef2f2; }
+    .m-stream-img.s-recycle { background: #f0fdf4; }
+    .m-stream-img.s-organics { background: #fefce8; }
+    .m-stream-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 6px; display: block; }
+    .m-stream-info { flex: 1; padding: 10px 12px 10px 0; }
+    .m-stream-name  { font-size: 13px; font-weight: 700; color: #111; }
+    .m-stream-spec  { font-size: 11.5px; color: #6b7280; margin-top: 2px; line-height: 1.4; }
+    .m-stream-price { font-size: 12px; font-weight: 700; color: #15803D; margin-top: 5px; }
+    .m-stream-price.optional-price { color: #9ca3af; }
+    .m-package-total {
+      margin-top: 4px; padding: 10px 14px;
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .m-package-total-label { font-size: 12px; font-weight: 600; color: #374151; }
+    .m-package-total-amount { font-size: 18px; font-weight: 800; color: #15803D; letter-spacing: -0.5px; }
+    .m-rec-adjust { margin-top: 8px; font-size: 12px; color: #9ca3af; }
+    .m-rec-adjust span { color: #15803D; font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+    /* ─── MOBILE: SCHEDULE CARD ─── */
+    .m-schedule-card {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px;
+      padding: 13px 14px; margin-top: 8px; display: flex; gap: 12px; align-items: center;
+    }
+    .m-schedule-ico {
+      width: 40px; height: 40px; background: #15803D; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff;
+    }
+    .m-schedule-ico .material-icons { font-size: 22px; }
+    .m-schedule-title { font-size: 13px; font-weight: 700; color: #111; }
+    .m-schedule-sub   { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+    /* ═══ UNIFIED INFO CARD — shared by Location, Route & Site Analysis ═══ */
+    .d-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .d-info-card {
+      background: #fff; border: 1px solid #e9eaec; border-radius: 10px;
+      overflow: hidden; transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .d-info-card.selectable { cursor: pointer; }
+    .d-info-card.selectable:hover { box-shadow: 0 3px 10px rgba(21,128,61,0.12); transform: translateY(-1px); }
+    .d-info-card.selected { border-color: #15803D; border-width: 2px; }
+    .d-info-card.deselected { opacity: 0.42; }
+    .d-info-card.deselected:hover { opacity: 0.6; transform: none; }
+
+    /* Card header row: name left, tag/badge right */
+    .d-info-card-hd {
+      padding: 11px 13px 10px; display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 8px; border-bottom: 1px solid #f3f4f6;
+    }
+    .d-info-card-title { font-size: 13px; font-weight: 700; color: #111; line-height: 1.3; flex: 1; min-width: 0; }
+    .d-info-card-check {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+      background: #15803D; border: 2px solid #15803D;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .d-info-card-check::after {
+      content: ''; width: 4px; height: 8px;
+      border: 2px solid #fff; border-top: none; border-left: none;
+      transform: rotate(45deg) translate(-1px,-1px);
+    }
+    .d-info-card.deselected .d-info-card-check { background: #e9eaec; border-color: #e9eaec; }
+    .d-info-card.deselected .d-info-card-check::after { border-color: #9ca3af; }
+
+    /* Card body */
+    .d-info-card-body { padding: 10px 13px; display: flex; flex-direction: column; gap: 4px; }
+    .d-info-card-primary { font-size: 12.5px; color: #374151; line-height: 1.45; }
+    .d-info-card-primary.green { color: #15803D; font-weight: 500; }
+    .d-info-card-sub { font-size: 11.5px; color: #9ca3af; line-height: 1.4; }
+
+    /* Route badge inside card header */
+    .d-route-badge {
+      font-size: 10px; font-weight: 700; background: #f0fdf4; color: #15803D;
+      border: 1px solid #bbf7d0; border-radius: 4px; padding: 2px 7px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* Location confirm button */
+    .d-loc-confirm {
+      margin-top: 12px; width: 100%; padding: 10px;
+      background: #15803D; color: #fff; border: none; border-radius: 9px;
+      font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .d-loc-confirm:hover { background: #166534; }
+
+    /* Site reveal animation */
+    @keyframes siteReveal {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .d-info-card { animation: siteReveal 0.25s ease both; }
+
+    /* Proposal */
+    .d-proposal {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+      overflow: hidden; margin-top: 9px;
+    }
+    .d-prop-head {
+      background: #15803D; padding: 15px 18px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .d-prop-head-title { font-size: 14px; font-weight: 700; color: #fff; }
+    .d-prop-head-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .d-prop-total-label { font-size: 11px; color: rgba(255,255,255,0.6); text-align: right; margin-bottom: 2px; }
+    .d-prop-amount { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
+    .d-prop-per { font-size: 12px; color: rgba(255,255,255,0.65); }
+    .d-prop-row {
+      padding: 10px 18px; display: flex; align-items: flex-start; gap: 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .d-prop-row:last-child { border-bottom: none; }
+    .d-prop-site { flex: 1; }
+    .d-prop-site-name { font-size: 13px; font-weight: 600; color: #111; }
+    .d-prop-site-detail { font-size: 11.5px; color: #9ca3af; margin-top: 2px; }
+    .d-prop-price { font-size: 14px; font-weight: 700; color: #15803D; white-space: nowrap; }
+    .d-prop-note { font-size: 11px; color: #9ca3af; text-align: right; margin-top: 1px; }
+
+    .d-nego-card {
+      background: #fafafa; border: 1px solid #e9eaec; border-radius: 9px;
+      padding: 13px 16px; margin-top: 9px;
+    }
+    .d-nego-new-price { font-size: 22px; font-weight: 800; color: #15803D; margin-bottom: 3px; }
+    .d-nego-price { font-size: 22px; font-weight: 800; color: #15803D; margin-bottom: 3px; }
+    .d-nego-saving { font-size: 12.5px; color: #6b7280; }
+    .d-nego-saving strong { color: #15803D; }
+    .d-nego-reason { font-size: 11.5px; color: #9ca3af; margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb; }
+
+    /* Setup — account creation */
+    .d-setup-wrap {
+      display: flex; min-height: 580px;
+    }
+    .d-setup-form-col {
+      width: 460px; flex-shrink: 0; background: #fff;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 48px 52px; overflow-y: auto;
+    }
+    .d-setup-form-inner { width: 100%; }
+    .d-setup-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .d-setup-logo-ico {
+      width: 34px; height: 34px; background: #15803D; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 17px; font-weight: 700;
+    }
+    .d-setup-logo-name { font-size: 17px; font-weight: 700; color: #111; letter-spacing: -0.3px; }
+    .d-setup-logo-name span { color: #15803D; }
+    .d-setup-h { font-size: 24px; font-weight: 800; color: #111; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .d-setup-s { font-size: 14px; color: #6b7280; margin-bottom: 22px; }
+    .d-setup-acct-card {
+      background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: #374151;
+    }
+    .d-setup-acct-name { font-weight: 700; font-size: 14px; color: #111; margin-bottom: 3px; }
+    .d-setup-acct-meta { color: #6b7280; line-height: 1.5; }
+    .d-setup-field { margin-bottom: 18px; }
+    .d-setup-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .d-setup-input-wrap { position: relative; }
+    .d-setup-input-ico {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 18px; color: #9ca3af;
+    }
+    .d-setup-input {
+      width: 100%; padding: 11px 14px 11px 40px;
+      border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 14px; font-family: 'Outfit', sans-serif; color: #111;
+      background: #fff; outline: none; transition: border-color 0.15s;
+    }
+    .d-setup-input:focus { border-color: #15803D; box-shadow: 0 0 0 3px rgba(21,128,61,0.1); }
+    .d-setup-checklist { list-style: none; padding: 0; margin: 8px 0 0; }
+    .d-setup-checklist li {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #9ca3af; padding: 2px 0;
+    }
+    .d-setup-checklist li .material-icons { font-size: 15px; }
+    .d-setup-checklist li.valid { color: #22C55E; }
+    .d-setup-checklist li.valid .material-icons { color: #22C55E; }
+    .d-setup-terms {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: #374151; margin-bottom: 22px; cursor: pointer;
+    }
+    .d-setup-terms input { accent-color: #15803D; margin-top: 2px; flex-shrink: 0; }
+    .d-setup-terms a { color: #3B82F6; text-decoration: none; }
+    .d-setup-cta {
+      width: 100%; padding: 13px; background: #15803D; color: #fff; border: none;
+      border-radius: 9px; font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.15s;
+    }
+    .d-setup-cta:hover { background: #166534; }
+    .d-setup-hero-col {
+      flex: 1; background: linear-gradient(148deg, #14532d 0%, #052e16 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 52px 48px; position: relative; overflow: hidden;
+    }
+    .d-setup-hero-col::before {
+      content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%;
+      background: rgba(74,222,128,0.07); top: -80px; right: -80px;
+    }
+    .d-setup-hero-col::after {
+      content: ''; position: absolute; width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(74,222,128,0.05); bottom: -50px; left: -40px;
+    }
+    .d-setup-hero-content { text-align: center; position: relative; z-index: 1; }
+    .d-setup-hero-ico {
+      width: 72px; height: 72px; background: rgba(74,222,128,0.15); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+    }
+    .d-setup-hero-ico .material-icons { font-size: 36px; color: #4ADE80; }
+    .d-setup-hero-h { font-size: 26px; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 12px; letter-spacing: -0.5px; }
+    .d-setup-hero-s { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 36px; }
+    .d-setup-feats { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+    .d-setup-feat { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.85); font-size: 13px; }
+    .d-setup-feat .material-icons { font-size: 20px; color: #4ADE80; flex-shrink: 0; }
+
+    /* Done */
+    .d-done-area {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 60px 60px 72px; text-align: center; background: #fff; min-height: 580px;
+    }
+    .d-done-icon {
+      width: 72px; height: 72px; background: #f0fdf4; border: 2px solid #bbf7d0;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin-bottom: 20px;
+    }
+    .d-done-h { font-size: 34px; font-weight: 800; color: #111; letter-spacing: -0.8px; margin-bottom: 8px; }
+    .d-done-s { font-size: 14px; color: #6b7280; margin-bottom: 36px; }
+    .d-done-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      width: 100%; max-width: 460px; margin-bottom: 28px;
+    }
+    .d-done-stat {
+      background: #f9fafb; border: 1px solid #f0f0f0; border-radius: 12px; padding: 18px 16px;
+    }
+    .d-done-stat-val { font-size: 30px; font-weight: 800; color: #111; letter-spacing: -0.5px; line-height: 1; margin-bottom: 6px; }
+    .d-done-stat-lbl { font-size: 12px; color: #9ca3af; font-weight: 500; }
+    .d-done-billing {
+      width: 100%; max-width: 460px; margin-bottom: 28px;
+      border-top: 1px solid #f0f0f0; padding-top: 20px; text-align: left;
+    }
+    .d-done-billing-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: #374151; padding: 5px 0; line-height: 1.5;
+    }
+    .d-done-billing-row .material-icons { font-size: 16px; color: #15803D; flex-shrink: 0; margin-top: 1px; }
+    .d-done-btn {
+      width: 100%; max-width: 460px; padding: 14px;
+      background: #15803D; color: #fff; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .d-done-btn:hover { background: #166534; }
+
+    /* ════ MOBILE ════ */
+    .mobile-device {
+      width: 390px; height: 844px; background: #fff; border-radius: 48px; overflow: hidden;
+      box-shadow: 0 0 0 10px #252525, 0 0 0 12px #1c1c1c, 0 40px 80px rgba(0,0,0,0.7);
+    }
+    .m-statusbar {
+      height: 44px; background: #fff;
+      display: flex; align-items: center; justify-content: space-between; padding: 12px 28px 0;
+    }
+    .m-statusbar .mtime { font-size: 15px; font-weight: 700; color: #111; }
+    .m-statusbar .micons { font-size: 11px; color: #111; display: flex; gap: 4px; align-items: center; }
+    .m-sitenav {
+      height: 50px; background: #fff; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;
+    }
+    .m-logo { font-size: 16px; font-weight: 800; color: #111; letter-spacing: -0.3px; }
+    .m-logo span { color: #15803D; }
+    .m-signin-link { font-size: 13px; font-weight: 500; color: #15803D; }
+    .m-page { height: calc(844px - 44px - 50px); display: flex; flex-direction: column; overflow: hidden; }
+
+    .m-landing-content { flex: 1; overflow-y: auto; background: #fff; }
+    .m-hero-band { background: linear-gradient(170deg, #f0fdf4 0%, #fff 60%); padding: 28px 22px 24px; }
+    .m-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #15803D; margin-bottom: 10px; }
+    .m-h1 { font-size: 26px; font-weight: 800; color: #111; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .m-sub { font-size: 14px; color: #6b7280; line-height: 1.55; margin-bottom: 22px; }
+    .m-search-field {
+      background: #fff; border: 2px solid #e5e7eb; border-radius: 14px;
+      padding: 13px 16px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: border-color 0.2s;
+    }
+    .m-search-field:hover { border-color: #bbf7d0; }
+    .m-search-field:focus-within { border-color: #15803D; box-shadow: 0 2px 10px rgba(0,0,0,0.06), 0 0 0 3px rgba(21,128,61,0.1); }
+    .m-search-ico { font-size: 16px; color: #9ca3af; flex-shrink: 0; }
+    .m-landing-input { flex: 1; border: none; outline: none; font-family: 'Outfit', sans-serif; font-size: 15px; color: #111; background: transparent; min-width: 0; }
+    .m-landing-input::placeholder { color: #9ca3af; }
+    .m-landing-mic { background: none; border: none; cursor: pointer; padding: 2px 4px; color: #9ca3af; display: flex; align-items: center; flex-shrink: 0; }
+    .m-landing-mic:hover { color: #6b7280; }
+    .m-landing-send { background: #15803D; color: #fff; border: none; border-radius: 8px; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 600; }
+    .m-ip-hint { display: flex; align-items: center; gap: 6px; margin-top: 9px; color: #9ca3af; }
+    .m-ip-hint span { font-size: 11px; }
+    .m-feature-list { padding: 16px 22px; display: flex; flex-direction: column; gap: 10px; }
+    .m-feat { display: flex; align-items: flex-start; gap: 12px; background: #f9fafb; border-radius: 12px; padding: 14px; }
+    .m-feat-ico { width: 34px; height: 34px; background: #f0fdf4; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .m-feat-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px; }
+    .m-feat-desc { font-size: 12px; color: #6b7280; line-height: 1.4; }
+    .m-trust-pills { padding: 14px 22px 24px; display: flex; flex-wrap: wrap; gap: 7px; }
+    .m-pill { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 20px; padding: 5px 10px; font-size: 11px; font-weight: 500; color: #166534; }
+
+    /* Mobile convo */
+    .m-convo-header {
+      padding: 12px 18px 10px; border-bottom: 1px solid #f0f0f0; background: #fafafa;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .m-convo-ico { width: 30px; height: 30px; background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 2px 6px rgba(21,128,61,0.22); }
+    .m-convo-ico .material-icons { font-size: 16px; }
+    .m-convo-title { font-size: 13px; font-weight: 600; color: #111; }
+    .m-convo-sub { font-size: 11px; color: #9ca3af; }
+    .m-thread { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; }
+
+    .m-agent-row { display: flex; align-items: flex-start; gap: 8px; }
+    .m-agent-av {
+      width: 26px; height: 26px;
+      background: linear-gradient(145deg, #1a9050 0%, #15803D 55%, #14532d 100%);
+      border-radius: 7px;
+      box-shadow: 0 2px 6px rgba(21,128,61,0.22), inset 0 1px 0 rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 2px;
+    }
+    .m-agent-name-lbl { font-size: 10px; font-weight: 600; color: #9ca3af; margin-bottom: 3px; }
+    .m-bubble-agent {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 14px 14px 14px 4px; padding: 11px 14px;
+      font-size: 13px; color: #374151; line-height: 1.55; max-width: calc(100% - 38px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 3px 10px rgba(0,0,0,0.04);
+    }
+    .m-bubble-agent strong { color: #111; font-weight: 600; }
+    .m-working-row { display: flex; align-items: flex-start; gap: 8px; }
+    .m-working-bubble {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 14px 14px 14px 4px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 7px; color: #9ca3af;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 3px 10px rgba(0,0,0,0.04);
+    }
+    .m-working-text { font-size: 12px; font-style: italic; }
+    .m-customer-row { display: flex; justify-content: flex-end; }
+    .m-bubble-customer {
+      background: linear-gradient(135deg, #1a9050 0%, #15803D 100%);
+      border: none;
+      border-radius: 14px 14px 4px 14px; padding: 10px 14px;
+      font-size: 13px; color: #fff; font-weight: 500; max-width: 75%;
+      box-shadow: 0 2px 6px rgba(21,128,61,0.22);
+    }
+
+    .m-replies { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .m-qbtn { background: #fff; border: 1.5px solid #15803D; color: #15803D; border-radius: 16px; padding: 7px 14px; font-size: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; cursor: pointer; }
+    .m-qbtn:hover { background: #f0fdf4; }
+    .m-qbtn.sec { border-color: #d1d5db; color: #6b7280; }
+
+    .m-mini-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+    .m-mini-row { padding: 9px 13px; display: flex; justify-content: space-between; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+    .m-mini-row:last-child { border-bottom: none; }
+    .m-mini-label { color: #6b7280; }
+    .m-mini-val { font-weight: 500; color: #111; }
+
+    .m-quote-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-top: 8px; }
+    .m-quote-head { background: #15803D; padding: 14px 16px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .m-quote-title { font-size: 14px; font-weight: 700; color: #fff; }
+    .m-quote-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .m-quote-total { font-size: 22px; font-weight: 800; color: #fff; }
+    .m-quote-per { font-size: 11px; color: rgba(255,255,255,0.7); text-align: right; }
+
+    .m-chat-bar { padding: 10px 14px 14px; border-top: 1px solid #f0f0f0; background: #fff; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .m-chat-input { flex: 1; border: 1.5px solid #e5e7eb; border-radius: 20px; padding: 10px 16px; font-size: 14px; font-family: 'Outfit', sans-serif; outline: none; }
+    .m-chat-input:focus { border-color: #15803D; }
+    .m-chat-send { background: #15803D; color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .m-mic-btn { background: #f3f4f6; color: #6b7280; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, color 0.2s; }
+    .m-mic-btn:hover { background: #e5e7eb; }
+    .m-mic-btn.listening { background: #fef2f2; color: #dc2626; animation: mic-pulse 1s ease-in-out infinite; }
+    @keyframes mic-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.3); } 50% { box-shadow: 0 0 0 6px rgba(220,38,38,0); } }
+    .m-voice-indicator { display: none; align-items: center; gap: 8px; padding: 6px 14px; background: #fef2f2; border-top: 1px solid #fee2e2; font-size: 12px; color: #dc2626; font-weight: 500; }
+    .m-voice-indicator.active { display: flex; }
+    .m-voice-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; animation: mic-pulse 0.8s ease-in-out infinite; }
+
+    /* ─── MOBILE SIGNUP SCREENS ─── */
+    .m-signup-scroll { flex: 1; overflow-y: auto; background: #fff; }
+    .m-signup-header { padding: 18px 20px 14px; border-bottom: 1px solid #f3f4f6; background: #fff; flex-shrink: 0; }
+    .m-signup-step { font-size: 11px; font-weight: 700; color: #15803D; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+    .m-signup-title { font-size: 19px; font-weight: 800; color: #111; letter-spacing: -0.3px; }
+    .m-signup-body { padding: 14px 20px 20px; }
+    .m-signup-addr {
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
+      padding: 8px 12px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11.5px; color: #166534; font-weight: 500; line-height: 1.4;
+    }
+    .m-signup-addr .material-icons { font-size: 14px; flex-shrink: 0; }
+    .m-bin-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .m-bin-row { display: flex; align-items: center; gap: 10px; border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+    .m-bin-row.optional { border-style: dashed; opacity: 0.68; }
+    .m-bin-swatch { width: 54px; height: 54px; flex-shrink: 0; padding: 6px; display: flex; align-items: center; justify-content: center; }
+    .m-bin-swatch img { width: 100%; height: 100%; object-fit: contain; }
+    .m-bin-info { flex: 1; padding: 9px 0; }
+    .m-bin-name { font-size: 13px; font-weight: 700; color: #111; }
+    .m-bin-detail { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+    .m-bin-price { font-size: 13px; font-weight: 700; color: #15803D; padding-right: 12px; white-space: nowrap; }
+    .m-bin-price.opt { color: #9ca3af; }
+    .m-total-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1.5px solid #f3f4f6; }
+    .m-total-lbl { font-size: 13px; font-weight: 600; color: #374151; }
+    .m-total-amt { font-size: 22px; font-weight: 800; color: #15803D; letter-spacing: -0.5px; }
+    .m-signup-notice { font-size: 11.5px; color: #9ca3af; text-align: center; margin: 8px 0 14px; line-height: 1.5; }
+    .m-signup-cta {
+      width: 100%; background: #15803D; color: #fff; border: none; border-radius: 12px;
+      padding: 15px; font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; cursor: pointer;
+    }
+    .m-signup-cta:hover { background: #166534; }
+
+    /* Payment */
+    .m-pay-summary {
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 14px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .m-pay-summary-lbl { font-size: 12px; color: #166534; font-weight: 500; }
+    .m-pay-summary-amt { font-size: 16px; font-weight: 800; color: #15803D; }
+    .m-fast-pay { display: flex; gap: 8px; margin-bottom: 10px; }
+    .m-fast-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e5e7eb; font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; background: #fff; color: #111; }
+    .m-fast-btn.apple { background: #000; color: #fff; border-color: #000; }
+    .m-pay-or { text-align: center; font-size: 11.5px; color: #9ca3af; margin: 10px 0 12px; position: relative; }
+    .m-pay-or::before, .m-pay-or::after { content: ''; position: absolute; top: 50%; height: 1px; background: #e5e7eb; width: calc(50% - 52px); }
+    .m-pay-or::before { left: 0; } .m-pay-or::after { right: 0; }
+    .m-field-group { margin-bottom: 10px; }
+    .m-field-label { font-size: 11px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+    .m-field-input { width: 100%; padding: 11px 13px; border: 1.5px solid #e5e7eb; border-radius: 9px; font-size: 14px; font-family: 'Outfit', sans-serif; color: #111; background: #fff; outline: none; }
+    .m-field-input:focus { border-color: #15803D; box-shadow: 0 0 0 3px rgba(21,128,61,0.1); }
+    .m-field-row { display: flex; gap: 8px; }
+    .m-field-row .m-field-group { flex: 1; }
+    .m-pay-secure { font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px; }
+
+    /* Welcome */
+    .m-welcome-hero { background: linear-gradient(135deg, #15803D 0%, #059669 100%); padding: 26px 20px 22px; text-align: center; flex-shrink: 0; }
+    .m-welcome-check { width: 54px; height: 54px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px; }
+    .m-welcome-h { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: -0.3px; }
+    .m-welcome-s { font-size: 12.5px; color: rgba(255,255,255,0.8); }
+    .m-welcome-body { flex: 1; overflow-y: auto; padding: 14px 20px 20px; background: #fff; }
+    .m-svc-list { border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+    .m-svc-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #f3f4f6; }
+    .m-svc-row:last-child { border-bottom: none; }
+    .m-svc-swatch { width: 48px; height: 48px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 5px; }
+    .m-svc-name { flex: 1; font-size: 12.5px; font-weight: 500; color: #111; }
+    .m-svc-price { font-size: 12.5px; font-weight: 700; color: #15803D; }
+    .m-svc-price.opt { color: #9ca3af; }
+    .m-start-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 13px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: #166534; line-height: 1.5; }
+    .m-start-card .material-icons { font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+    .m-feat-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 16px; }
+    .m-feat-item { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #374151; }
+    .m-feat-item .material-icons { font-size: 16px; color: #15803D; flex-shrink: 0; }
+
+    /* Reset link */
+    .reset-link { font-size: 12px; color: rgba(255,255,255,0.25); text-decoration: underline; cursor: pointer; margin-top: 4px; }
+    .reset-link:hover { color: rgba(255,255,255,0.45); }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <div class="concept-bar">
+    <span class="concept-title">PortalHub — Agent Onboarding · Concept v0.4 · Interactive · LHG / Lakeshore Hospitality Group scenario</span>
+    <span class="concept-badge">NEW DIRECTION</span>
+  </div>
+
+  <div class="view-toggle">
+    <button class="toggle-btn" id="btn-mobile" onclick="showView('mobile',this)">📱 Mobile — Residential</button>
+    <button class="toggle-btn active" id="btn-desktop" onclick="showView('desktop',this)">🖥 Desktop — Business · Multi-location</button>
+  </div>
+
+  <div class="canvas">
+
+
+    <!-- ══════════ MOBILE ══════════ -->
+    <div class="view" id="view-mobile">
+      <span class="device-label">Mobile · Residential · Address-first flow</span>
+      <div class="mobile-device">
+        <div class="m-statusbar">
+          <span class="mtime">9:41</span>
+          <span class="micons">●●● 5G 🔋</span>
+        </div>
+        <div class="m-sitenav">
+          <span class="m-logo">Waste<span>Connect</span></span>
+          <span class="m-signin-link">Sign in</span>
+        </div>
+
+        <!-- Landing -->
+        <div class="m-page" id="m-landing">
+          <div class="m-landing-content">
+            <div class="m-hero-band">
+              <div class="m-eyebrow">Chicago · IL</div>
+              <div class="m-h1">Waste collection<br>sorted in 2 minutes.</div>
+              <div class="m-sub">Enter your address. We check your street, match your neighbors' rate, and have a quote ready — no forms.</div>
+              <div class="m-search-field">
+                <span class="m-search-ico">📍</span>
+                <input class="m-landing-input" id="m-landing-input" placeholder="Your address or ZIP code" value="742 Evergreen Terrace, Chicago" onkeydown="if(event.key==='Enter')mLandingSubmit()">
+                <button class="m-landing-mic" id="m-landing-mic" onclick="mLandingVoice()" title="Speak">
+                  <span class="material-icons" style="font-size:18px">mic</span>
+                </button>
+                <button class="m-landing-send" onclick="mLandingSubmit()">↑</button>
+              </div>
+            </div>
+            <div class="m-feature-list">
+              <div class="m-feat"><div class="m-feat-ico">🚛</div><div><div class="m-feat-title">We know your street</div><div class="m-feat-desc">We service most Chicago neighborhoods. Instant coverage check.</div></div></div>
+              <div class="m-feat"><div class="m-feat-ico">💬</div><div><div class="m-feat-title">No forms to fill in</div><div class="m-feat-desc">Give us your address. We handle everything else and have a price in seconds.</div></div></div>
+              <div class="m-feat"><div class="m-feat-ico">⚡</div><div><div class="m-feat-title">Quote in under 2 minutes</div><div class="m-feat-desc">We check your route, match your service, and have a price ready — no waiting.</div></div></div>
+            </div>
+            <div class="m-trust-pills">
+              <span class="m-pill">✓ 50,000+ Chicago customers</span>
+              <span class="m-pill">✓ 2-minute sign-up</span>
+              <span class="m-pill">✓ No lock-in</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversation -->
+        <div class="m-page" id="m-convo" style="display:none">
+          <div class="m-convo-header">
+            <div class="m-convo-ico"><span class="material-icons">assistant</span></div>
+            <div>
+              <div class="m-convo-title">WasteConnect</div>
+              <div class="m-convo-sub" id="m-convo-sub">Finding the right plan for your address</div>
+            </div>
+          </div>
+          <div class="m-thread" id="m-thread"></div>
+          <div class="m-voice-indicator" id="m-voice-indicator">
+            <div class="m-voice-dot"></div>
+            <span id="m-voice-text">Listening…</span>
+          </div>
+          <div class="m-chat-bar" id="m-chat-bar">
+            <button class="m-mic-btn" id="m-mic-btn" onclick="mToggleVoice()" title="Speak">
+              <span class="material-icons" style="font-size:18px">mic</span>
+            </button>
+            <input class="m-chat-input" id="m-input" placeholder="Your address…" value="742 Evergreen Terrace, Chicago" onkeydown="if(event.key==='Enter')mHandleInput()">
+            <button class="m-chat-send" id="m-send-btn" onclick="mHandleInput()">↑</button>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="m-page" id="m-order" style="display:none">
+          <div class="m-signup-header">
+            <div class="m-signup-step">Step 1 of 3 · Order Summary</div>
+            <div class="m-signup-title">Your service plan</div>
+          </div>
+          <div class="m-signup-scroll">
+            <div class="m-signup-body">
+              <div class="m-signup-addr">
+                <span class="material-icons">location_on</span>
+                742 Evergreen Terr., Chicago IL 60614 · Starting Wed, April 9
+              </div>
+              <div class="m-bin-list">
+                <div class="m-bin-row">
+                  <div class="m-bin-swatch" style="background:#fef2f2">
+                    <img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/Red%20bin.png" alt="Trash">
+                  </div>
+                  <div class="m-bin-info">
+                    <div class="m-bin-name">Standard Trash Cart</div>
+                    <div class="m-bin-detail">Every Wednesday · Route 7B</div>
+                  </div>
+                  <div class="m-bin-price">$32/mo</div>
+                </div>
+                <div class="m-bin-row">
+                  <div class="m-bin-swatch" style="background:#f0fdf4">
+                    <img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/green%20bin.png" alt="Recycling">
+                  </div>
+                  <div class="m-bin-info">
+                    <div class="m-bin-name">Recycling Cart</div>
+                    <div class="m-bin-detail">Every Wednesday · Route 7B</div>
+                  </div>
+                  <div class="m-bin-price">$12/mo</div>
+                </div>
+                <div class="m-bin-row optional">
+                  <div class="m-bin-swatch" style="background:#fefce8">
+                    <img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/brown%20bin.png" alt="Organics">
+                  </div>
+                  <div class="m-bin-info">
+                    <div class="m-bin-name">Organics Cart</div>
+                    <div class="m-bin-detail">Every other Wednesday · Optional</div>
+                  </div>
+                  <div class="m-bin-price opt">+$8/mo</div>
+                </div>
+              </div>
+              <div class="m-total-row">
+                <span class="m-total-lbl">Monthly total</span>
+                <span class="m-total-amt">$44/mo</span>
+              </div>
+              <div class="m-signup-notice">No payment today. First bill April 30.</div>
+              <button class="m-signup-cta" onclick="mGoPayment()">Set up payment →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="m-page" id="m-payment" style="display:none">
+          <div class="m-signup-header">
+            <div class="m-signup-step">Step 2 of 3 · Payment</div>
+            <div class="m-signup-title">Your details</div>
+          </div>
+          <div class="m-signup-scroll">
+            <div class="m-signup-body">
+              <div class="m-pay-summary">
+                <div>
+                  <div class="m-pay-summary-lbl">Residential · Route 7B</div>
+                  <div style="font-size:11px;color:#9ca3af;margin-top:1px">No charge until April 30</div>
+                </div>
+                <div class="m-pay-summary-amt">$44/mo</div>
+              </div>
+              <div class="m-fast-pay">
+                <button class="m-fast-btn apple">🍎&nbsp; Apple Pay</button>
+                <button class="m-fast-btn"><strong>G</strong>&nbsp; Google Pay</button>
+              </div>
+              <div class="m-pay-or">or enter card details</div>
+              <div class="m-field-group">
+                <div class="m-field-label">Full name</div>
+                <input class="m-field-input" type="text" value="Sarah Johnson">
+              </div>
+              <div class="m-field-group">
+                <div class="m-field-label">Email</div>
+                <input class="m-field-input" type="email" value="sarah.johnson@example.com">
+              </div>
+              <div class="m-field-group">
+                <div class="m-field-label">Card number</div>
+                <input class="m-field-input" type="text" value="4242  4242  4242  4242">
+              </div>
+              <div class="m-field-row">
+                <div class="m-field-group">
+                  <div class="m-field-label">Expiry</div>
+                  <input class="m-field-input" type="text" value="09 / 28">
+                </div>
+                <div class="m-field-group">
+                  <div class="m-field-label">CVC</div>
+                  <input class="m-field-input" type="text" value="•••">
+                </div>
+              </div>
+              <button class="m-signup-cta" onclick="mGoWelcome()">Complete sign-up →</button>
+              <div class="m-pay-secure">🔒 Stripe secured · No charge until April 30</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Welcome -->
+        <div class="m-page" id="m-welcome" style="display:none">
+          <div class="m-welcome-hero">
+            <div class="m-welcome-check">✓</div>
+            <div class="m-welcome-h">You're all set, Sarah</div>
+            <div class="m-welcome-s">Account created · Service set</div>
+          </div>
+          <div class="m-welcome-body">
+            <div class="m-svc-list">
+              <div class="m-svc-row">
+                <div class="m-svc-swatch" style="background:#fef2f2"><img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/Red%20bin.png" alt="Trash" style="width:100%;height:100%;object-fit:contain"></div>
+                <div class="m-svc-name">Standard Trash Cart</div>
+                <div class="m-svc-price">$32/mo</div>
+              </div>
+              <div class="m-svc-row">
+                <div class="m-svc-swatch" style="background:#f0fdf4"><img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/green%20bin.png" alt="Recycling" style="width:100%;height:100%;object-fit:contain"></div>
+                <div class="m-svc-name">Recycling Cart</div>
+                <div class="m-svc-price">$12/mo</div>
+              </div>
+              <div class="m-svc-row" style="opacity:0.6">
+                <div class="m-svc-swatch" style="background:#fefce8"><img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/brown%20bin.png" alt="Organics" style="width:100%;height:100%;object-fit:contain"></div>
+                <div class="m-svc-name">Organics Cart · Optional</div>
+                <div class="m-svc-price opt">+$8/mo</div>
+              </div>
+            </div>
+            <div class="m-start-card">
+              <span class="material-icons">event</span>
+              <div><strong>First collection Wed, April 9</strong><br>742 Evergreen Terr. · Route 7B</div>
+            </div>
+            <div class="m-feat-list">
+              <div class="m-feat-item"><span class="material-icons">receipt_long</span> View and pay bills</div>
+              <div class="m-feat-item"><span class="material-icons">notifications</span> Text reminders before collection</div>
+              <div class="m-feat-item"><span class="material-icons">support_agent</span> Report missed pickups</div>
+            </div>
+            <button class="m-signup-cta" onclick="window.location.href='../dashboard/residential-ai.html'">Go to my account →</button>
+          </div>
+        </div>
+      </div>
+      <span class="reset-link" onclick="mReset()">↺ Reset</span>
+    </div>
+
+
+    <!-- ══════════ DESKTOP ══════════ -->
+    <div class="view active" id="view-desktop">
+      <span class="device-label">Desktop · Commercial · Multi-location · All 7 agents · LHG → Lakeshore Hospitality Group → Lakeshore Hospitality LLC</span>
+
+      <div class="desktop-device">
+        <div class="browser-bar">
+          <div class="bdot r"></div><div class="bdot y"></div><div class="bdot g"></div>
+          <div class="browser-url">wasteconnect.com/business</div>
+        </div>
+
+        <!-- Landing -->
+        <div id="d-landing">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links">
+              <button class="d-nav-signin">Sign in</button>
+            </div>
+          </div>
+          <div class="d-landing">
+            <div class="d-landing-left">
+              <div class="d-eyebrow">Commercial waste · Containers · Chicago</div>
+              <div class="d-h1">A complete quote<br>in <em>seconds.</em></div>
+              <div class="d-subline">Enter your company name. Our AI finds your locations, maps your container needs, and builds a tailored service proposal — without asking you a single question.</div>
+              <div class="d-search-box">
+                <span style="font-size:18px;flex-shrink:0">🏢</span>
+                <input class="d-search-input" id="d-input" placeholder="Company name or address…" value="LHG" onkeydown="if(event.key==='Enter')dStart()">
+                <button class="d-search-btn" onclick="dStart()">Get your quote →</button>
+              </div>
+              <div class="d-search-secure">🔒 Secure setup · No commitment until you confirm</div>
+            </div>
+            <div class="d-landing-right">
+              <div class="d-trust-card">
+                <div class="d-trust-card-title">Why businesses choose us</div>
+                <div class="d-trust-stat">
+                  <div class="d-trust-ico">🚛</div>
+                  <div><div class="d-trust-val">12,400+</div><div class="d-trust-lbl">Business sites serviced</div></div>
+                </div>
+                <div class="d-trust-stat">
+                  <div class="d-trust-ico">⚡</div>
+                  <div><div class="d-trust-val">2 min</div><div class="d-trust-lbl">Average quote time</div></div>
+                </div>
+                <div class="d-trust-stat">
+                  <div class="d-trust-ico">♻️</div>
+                  <div><div class="d-trust-val">98.7%</div><div class="d-trust-lbl">On-time collection rate</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="d-trust-strip">
+            <div class="d-strip-item"><span class="tick">✓</span> No forms to fill in</div>
+            <div class="d-strip-item"><span class="tick">✓</span> Multi-location support</div>
+            <div class="d-strip-item"><span class="tick">✓</span> Food waste &amp; recycling covered</div>
+            <div class="d-strip-item"><span class="tick">✓</span> Cancel with 30 days notice</div>
+          </div>
+        </div>
+
+        <!-- Conversation -->
+        <div id="d-convo" style="display:none">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links">
+              <span class="d-nav-link">Services</span>
+              <button class="d-nav-signin">Sign in</button>
+            </div>
+          </div>
+          <div class="d-convo-header">
+            <div class="d-convo-company">
+              <div class="d-convo-co-ico"><span class="material-icons" style="font-size:18px">assistant</span></div>
+              <div>
+                <div class="d-convo-co-name" id="d-co-name">Lakeshore Hospitality Group</div>
+                <div class="d-convo-co-type" id="d-co-type">Hospitality · Restaurants &amp; Bars · Chicago, IL</div>
+              </div>
+            </div>
+            <div class="d-nav-stepper">
+              <div class="d-step" id="dp1"><div class="d-step-num" id="dn1"><span>1</span></div> Company</div>
+              <div class="d-step-connector" id="dc1"></div>
+              <div class="d-step" id="dp2"><div class="d-step-num" id="dn2"><span>2</span></div> Locations</div>
+              <div class="d-step-connector" id="dc2"></div>
+              <div class="d-step" id="dp3"><div class="d-step-num" id="dn3"><span>3</span></div> Routes</div>
+              <div class="d-step-connector" id="dc3"></div>
+              <div class="d-step" id="dp4"><div class="d-step-num" id="dn4"><span>4</span></div> Pricing</div>
+              <div class="d-step-connector" id="dc4"></div>
+              <div class="d-step" id="dp5"><div class="d-step-num" id="dn5"><span>5</span></div> Confirm</div>
+            </div>
+          </div>
+          <div class="d-convo-wrap">
+            <div class="d-chat-col">
+              <div class="d-thread" id="d-thread"></div>
+              <div class="d-input-bar">
+                <input class="d-chat-input" id="d-chat-input" placeholder="Use quick replies above, or type a message…" disabled
+                  onkeydown="if(event.key==='Enter' && !this.disabled) dSendInput()">
+                <button class="d-chat-send" id="d-chat-send" onclick="dSendInput()" disabled>↑</button>
+              </div>
+            </div>
+            <div class="d-order-col">
+              <div class="d-order-hd">
+                <div class="d-order-hd-title">Order Summary</div>
+                <div class="d-order-hd-sub" id="dOrderSub">Your service details build here as we go</div>
+              </div>
+              <div class="d-order-body">
+                <div class="d-sum-section" id="sum-company">
+                  <div class="d-sum-sec-header">
+                    <div class="d-sum-sec-title"><div class="d-sum-icon" id="sum-company-icon">1</div> Company</div>
+                    <button class="d-sum-edit-btn" id="sum-company-edit" style="display:none" onclick="dEditSection('company')">Edit</button>
+                  </div>
+                  <div class="d-sum-content" id="sum-company-content">
+                    <div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:36px"></div><div class="d-sum-pending-dot" style="width:24px"></div></div>
+                    <div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:22px"></div></div>
+                  </div>
+                </div>
+                <div class="d-sum-section" id="sum-locations">
+                  <div class="d-sum-sec-header">
+                    <div class="d-sum-sec-title"><div class="d-sum-icon" id="sum-locations-icon">2</div> Locations</div>
+                    <button class="d-sum-edit-btn" id="sum-locations-edit" style="display:none" onclick="dEditSection('locations')">Edit</button>
+                  </div>
+                  <div class="d-sum-content" id="sum-locations-content">
+                    <div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:20px"></div><div class="d-sum-pending-dot" style="width:32px"></div></div>
+                    <div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:20px"></div><div class="d-sum-pending-dot" style="width:26px"></div></div>
+                  </div>
+                </div>
+                <div class="d-sum-section" id="sum-routes">
+                  <div class="d-sum-sec-header">
+                    <div class="d-sum-sec-title"><div class="d-sum-icon" id="sum-routes-icon">3</div> Collection Schedule</div>
+                    <button class="d-sum-edit-btn" id="sum-routes-edit" style="display:none" onclick="dEditSection('routes')">Edit</button>
+                  </div>
+                  <div class="d-sum-content" id="sum-routes-content">
+                    <div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:28px"></div><div class="d-sum-pending-dot" style="width:18px"></div></div>
+                  </div>
+                </div>
+                <div class="d-sum-section" id="sum-pricing" style="display:none">
+                  <div class="d-sum-sec-header">
+                    <div class="d-sum-sec-title"><div class="d-sum-icon done" id="sum-pricing-icon"></div> Service Breakdown</div>
+                  </div>
+                  <div class="d-sum-content" id="sum-pricing-content"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Setup — account creation -->
+        <div id="d-setup" style="display:none">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links"><span class="d-nav-link">Step 2 of 2 — Create your login</span></div>
+          </div>
+          <div class="d-setup-wrap">
+            <div class="d-setup-form-col">
+              <div class="d-setup-form-inner">
+                <div class="d-setup-logo">
+                  <div class="d-setup-logo-ico">W</div>
+                  <div class="d-setup-logo-name">Waste<span>Connect</span></div>
+                </div>
+                <div class="d-setup-h">Create your account</div>
+                <div class="d-setup-s">Set a password to access your portal and manage all your locations.</div>
+                <div class="d-setup-acct-card">
+                  <div class="d-setup-acct-name">Lakeshore Hospitality Group</div>
+                  <div class="d-setup-acct-meta"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="98f5f9eafbedebb6fbf0fdf6d8f4f9f3fdebf0f7eafdf0ffb6fbf7f5">[email&#160;protected]</a> · ACC-2026-04821<br>4 locations · Chicago, IL</div>
+                </div>
+                <div class="d-setup-field">
+                  <label class="d-setup-label" for="d-pw1">Create Password</label>
+                  <div class="d-setup-input-wrap">
+                    <span class="material-icons d-setup-input-ico">lock</span>
+                    <input type="password" id="d-pw1" class="d-setup-input" placeholder="Create a strong password">
+                  </div>
+                  <ul class="d-setup-checklist">
+                    <li class="valid"><span class="material-icons">check_circle</span>At least 8 characters</li>
+                    <li class="valid"><span class="material-icons">check_circle</span>One uppercase letter</li>
+                    <li><span class="material-icons">radio_button_unchecked</span>One number</li>
+                    <li><span class="material-icons">radio_button_unchecked</span>One special character</li>
+                  </ul>
+                </div>
+                <div class="d-setup-field">
+                  <label class="d-setup-label" for="d-pw2">Confirm Password</label>
+                  <div class="d-setup-input-wrap">
+                    <span class="material-icons d-setup-input-ico">lock</span>
+                    <input type="password" id="d-pw2" class="d-setup-input" placeholder="Confirm your password">
+                  </div>
+                </div>
+                <label class="d-setup-terms">
+                  <input type="checkbox" checked>
+                  <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+                </label>
+                <button class="d-setup-cta" onclick="dSetupComplete()">
+                  <span>Create Account</span>
+                  <span class="material-icons" style="font-size:18px">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+            <div class="d-setup-hero-col">
+              <div class="d-setup-hero-content">
+                <div class="d-setup-hero-ico">
+                  <span class="material-icons">eco</span>
+                </div>
+                <div class="d-setup-hero-h">Your waste portal,<br>all in one place</div>
+                <div class="d-setup-hero-s">Manage every location, pay bills, and track collections — without a single phone call.</div>
+                <div class="d-setup-feats">
+                  <div class="d-setup-feat"><span class="material-icons">payments</span>Pay bills and view invoices online</div>
+                  <div class="d-setup-feat"><span class="material-icons">location_on</span>Manage all 4 locations from one account</div>
+                  <div class="d-setup-feat"><span class="material-icons">notifications</span>Get reminders before collection days</div>
+                  <div class="d-setup-feat"><span class="material-icons">support_agent</span>Request changes or report issues instantly</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Done -->
+        <div id="d-done" style="display:none">
+          <div class="d-sitenav">
+            <span class="d-logo">Waste<span>Connect</span></span>
+            <div class="d-nav-links"><button class="d-nav-signin">My account</button></div>
+          </div>
+          <div class="d-done-area">
+            <div class="d-done-icon">✓</div>
+            <div class="d-done-h">You're all set, Lakeshore.</div>
+            <div class="d-done-s">Contract summary sent to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bbd6dac9d8cec895d8d3ded5fbd7dad0dec8d3d4c9ded3dc95d8d4d6">[email&#160;protected]</a></div>
+            <div class="d-done-stats">
+              <div class="d-done-stat"><div class="d-done-stat-val">4</div><div class="d-done-stat-lbl">Locations confirmed</div></div>
+              <div class="d-done-stat"><div class="d-done-stat-val">$510</div><div class="d-done-stat-lbl">Per month</div></div>
+              <div class="d-done-stat"><div class="d-done-stat-val">April 7</div><div class="d-done-stat-lbl">First collection</div></div>
+              <div class="d-done-stat"><div class="d-done-stat-val">30 days</div><div class="d-done-stat-lbl">Notice to cancel</div></div>
+            </div>
+            <div class="d-done-billing">
+              <div class="d-done-billing-row"><span class="material-icons">receipt_long</span><span>First invoice May 1, 2026 · Net-30 · Sent to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="157874677660663b767d707b5579747e70667d7a67707d723b767a78">[email&#160;protected]</a></span></div>
+              <div class="d-done-billing-row"><span class="material-icons">credit_card</span><span>Set up auto-pay anytime in your portal — no action needed today</span></div>
+            </div>
+            <button class="d-done-btn" onclick="window.location.href='../dashboard/dashboard-ai.html'">Go to your account →</button>
+          </div>
+        </div>
+
+      </div><!-- /desktop-device -->
+      <span class="reset-link" onclick="dReset()">↺ Reset</span>
+    </div>
+
+  </div><!-- /canvas -->
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    /* ═══════════════════════════════════
+       SHARED
+    ═══════════════════════════════════ */
+    function showView(v, btn) {
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.toggle-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + v).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    /* ═══════════════════════════════════
+       DESKTOP — INTERACTIVE AUTO-PLAY
+    ═══════════════════════════════════ */
+    let dInputVal = '';
+    let dInputCallback = null;
+    const dThread = () => document.getElementById('d-thread');
+
+    function dScroll() {
+      const t = dThread();
+      if (t) setTimeout(() => t.scrollTop = t.scrollHeight, 60);
+    }
+
+    // dAddCustomer defined below with type support
+
+    function dAddWorking(agentName, text) {
+      const el = document.createElement('div');
+      el.className = 'd-agent-working d-wlive';
+      const av = dAvatarFor(agentName);
+      el.innerHTML = `
+        <div class="d-agent-avatar ${av.cls}" style="opacity:0.55;flex-shrink:0;margin-top:1px;">${av.ico}</div>
+        <div>
+          <div class="d-agent-name">${agentName}</div>
+          <div class="d-working-bubble">
+            <div class="pulse-dot"></div><div class="pulse-dot"></div><div class="pulse-dot"></div>
+            <span class="d-working-text">${text}</span>
+          </div>
+        </div>`;
+      dThread().appendChild(el);
+      dScroll();
+      return el;
+    }
+
+    function dRemoveWorking() {
+      document.querySelectorAll('.d-wlive').forEach(el => el.remove());
+    }
+
+    // ─── Location master data — single source of truth for all downstream steps ───
+    const dLocData = [
+      {
+        id: 'loc1', name: 'Lakeshore Grill', addr: '2122 N Lincoln Ave, Chicago IL 60614',
+        tag: 'Full-Service Restaurant', tagCls: 'tag-food',
+        lat: 41.9239, lng: -87.6354,
+        route: 'Route 9C', days: 'Mon + Thu', routeNote: '3 nearby restaurant accounts on same run',
+        serviceInsight: '4-yard dumpster · General waste, food waste & cardboard',
+        serviceConfig: '3× weekly · Mon, Wed + Fri · Rear alley access',
+        badge: 'Full-Service Restaurant', icoClr: 'clr-food', ico: 'restaurant',
+        insight: 'High-volume kitchen — daily food waste and significant cardboard from deliveries.',
+        chips: ['General waste', 'Food waste', 'Cardboard', 'Glass recycling'], highlight: [1],
+        schedule: '3× weekly · Mon, Wed + Fri',
+        price: '$245/mo', priceNote: 'Restaurant rate · Food waste included',
+        priceDetail: '3× weekly · 4-yard dumpster · Food waste · Cardboard recycling',
+        priceNum: 245
+      },
+      {
+        id: 'loc2', name: 'The Tap Room', addr: '1530 N Milwaukee Ave, Chicago IL 60622',
+        tag: 'Bar + Nightlife', tagCls: 'tag-bar',
+        lat: 41.9074, lng: -87.6726,
+        route: 'Route 11A', days: 'Tues + Fri', routeNote: 'Shared run with Lakeshore Social · Route 11A',
+        serviceInsight: '2-yard dumpster · High-volume glass recycling & general waste',
+        serviceConfig: '2× weekly · Tues + Fri · Mid-morning pickup',
+        badge: 'Bar + Nightlife', icoClr: 'clr-venue', ico: 'sports_bar',
+        insight: 'Late-night venue — glass is the primary stream. Mid-morning collection to avoid early AM conflicts.',
+        chips: ['Glass recycling', 'General waste', 'Cardboard'], highlight: [0],
+        schedule: '2× weekly · Tues + Fri',
+        price: '$148/mo', priceNote: 'Venue rate · Glass recycling included',
+        priceDetail: '2× weekly · 2-yard dumpster · High-volume glass recycling',
+        priceNum: 148
+      },
+      {
+        id: 'loc3', name: 'Lakeshore Social', addr: '3200 N Clark St, Chicago IL 60657',
+        tag: 'Caf\u00e9 + Casual Dining', tagCls: 'tag-food',
+        lat: 41.9434, lng: -87.6457,
+        route: 'Route 11A', days: 'Tues + Fri', routeNote: 'Shared run with The Tap Room · Route 11A',
+        serviceInsight: '2-yard dumpster · General waste, food waste & recycling',
+        serviceConfig: '2× weekly · Tues + Fri · Shared with The Tap Room',
+        badge: 'Caf\u00e9 + Casual Dining', icoClr: 'clr-food', ico: 'local_cafe',
+        insight: 'Caf\u00e9 with kitchen — food waste daily, moderate cardboard. Shares Tap Room run for savings.',
+        chips: ['General waste', 'Food waste', 'Recycling'], highlight: [1],
+        schedule: '2× weekly · Tues + Fri (shared run)',
+        price: '$115/mo', priceNote: 'Caf\u00e9 rate · Shared route savings',
+        priceDetail: '2× weekly · 2-yard dumpster · Food waste · Recycling · Shared run',
+        priceNum: 115
+      },
+      {
+        id: 'loc4', name: 'Lakeshore HQ', addr: '225 W Wacker Dr, Chicago IL 60606',
+        tag: 'Corporate Office', tagCls: 'tag-office',
+        lat: 41.8866, lng: -87.6361,
+        route: 'Route 14A', days: 'Wednesdays', routeNote: 'Standard office collection',
+        serviceInsight: '96-gal wheeled cart · General waste & paper recycling',
+        serviceConfig: 'Weekly · Wednesdays · Front-of-building pickup',
+        badge: 'Corporate Office', icoClr: 'clr-office', ico: 'business',
+        insight: 'Low-volume office — general waste and paper recycling only. No food waste.',
+        chips: ['General waste', 'Paper recycling'], highlight: [],
+        schedule: 'Weekly · Wednesdays',
+        price: '$52/mo', priceNote: 'Standard office rate',
+        priceDetail: 'Weekly · 96-gal cart · Paper recycling · Standard office',
+        priceNum: 52
+      }
+    ];
+    let dActiveLocs = ['loc1', 'loc2', 'loc3', 'loc4'];
+    let dAdjustments = { grease: false, daily: false };
+
+    function dAdjustedLoc(l) {
+      if (l.id !== 'loc1') return l;
+      let detail = l.priceDetail, note = l.priceNote, p = l.priceNum;
+      if (dAdjustments.daily)  { detail = detail.replace('3× weekly', 'Daily (7×)'); note += ' · Daily frequency'; p += 55; }
+      if (dAdjustments.grease) { detail += ' · FOG collection'; note += ' · Grease trap'; p += 40; }
+      return { ...l, priceDetail: detail, priceNote: note, priceNum: p, price: '$' + p + '/mo' };
+    }
+
+    const dAvatarMap = {
+      'Company Research Agent': { cls: 'av-co',      ico: '🔍' },
+      'Multi-Location Discovery Agent': { cls: 'av-loc',   ico: '📍' },
+      'Route &amp; Schedule Agent':     { cls: 'av-route', ico: '🚛' },
+      'Route & Schedule Agent':         { cls: 'av-route', ico: '🚛' },
+      'Service Analysis Agent':         { cls: 'av-service', ico: '♻️' },
+      'Pricing Agent':                  { cls: 'av-price', ico: '💰' },
+      'Negotiation Agent':              { cls: 'av-price', ico: '💬' },
+      'Scout':                          { cls: 'av-co',    ico: '✦' },
+      'Escalation Agent':               { cls: '',         ico: '📋' },
+    };
+    function dAvatarFor(name) {
+      const a = dAvatarMap[name];
+      return a ? a : { cls: '', ico: '✦' };
+    }
+
+    function dAddAgent(agentName, html) {
+      const el = document.createElement('div');
+      el.className = 'd-agent-msg';
+      const av = dAvatarFor(agentName);
+      el.innerHTML = `
+        <div class="d-agent-avatar ${av.cls}">${av.ico}</div>
+        <div>
+          <div class="d-agent-name">${agentName}</div>
+          <div class="d-agent-bubble">${html}</div>
+        </div>`;
+      dThread().appendChild(el);
+      dScroll();
+    }
+
+    function dAddReplies(options) {
+      const wrap = document.createElement('div');
+      const row = document.createElement('div');
+      row.className = 'd-replies-row';
+      options.forEach((o, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'd-quick-btn' + (i > 0 ? ' d-quick-sec' : '');
+        btn.textContent = o.text;
+        btn.addEventListener('click', () => dChoose(o.text, window[o.fn], row));
+        row.appendChild(btn);
+      });
+      const lbl = document.createElement('div');
+      lbl.className = 'd-replies-label';
+      lbl.textContent = 'quick reply options';
+      wrap.appendChild(row);
+      wrap.appendChild(lbl);
+      dThread().appendChild(wrap);
+      dScroll();
+    }
+
+    function dChoose(text, fn, row) {
+      // Remove the entire reply row once a choice is made
+      if (row && row.parentElement) row.parentElement.remove();
+      dAddCustomer(text, 'tapped');
+      dDisableInput();
+      setTimeout(fn, 600);
+    }
+
+    function dAddCustomer(text, type) {
+      const el = document.createElement('div');
+      el.className = 'd-customer-msg';
+      if (type === 'typed') {
+        el.innerHTML = `
+          <div>
+            <div class="d-typed-label">⌨ typed</div>
+            <div class="d-customer-bubble d-typed">${text}</div>
+          </div>`;
+      } else {
+        el.innerHTML = `<div class="d-customer-bubble">${text}</div>`;
+      }
+      dThread().appendChild(el);
+      dScroll();
+    }
+
+    function dEnableInput(suggestion, callback, placeholder) {
+      const inp = document.getElementById('d-chat-input');
+      const btn = document.getElementById('d-chat-send');
+      inp.disabled = false;
+      btn.disabled = false;
+      inp.value = suggestion || '';
+      inp.placeholder = placeholder || 'Type your message…';
+      inp.style.borderColor = '#15803D';
+      inp.style.background = '#fff';
+      dInputCallback = callback || null;
+      setTimeout(() => inp.focus(), 150);
+    }
+
+    function dDisableInput() {
+      const inp = document.getElementById('d-chat-input');
+      const btn = document.getElementById('d-chat-send');
+      inp.disabled = true;
+      btn.disabled = true;
+      inp.value = '';
+      inp.style.borderColor = '';
+      inp.style.background = '';
+      inp.placeholder = 'Use quick replies above, or type a message…';
+      dInputCallback = null;
+    }
+
+    function dSendInput() {
+      const inp = document.getElementById('d-chat-input');
+      const text = inp.value.trim();
+      if (!text || inp.disabled) return;
+      const cb = dInputCallback;
+      dDisableInput();
+      dAddCustomer(text, 'typed');
+      setTimeout(() => { if (typeof cb === 'function') cb(); else dS9(); }, 600);
+    }
+
+    /* Mark all current thread items as completed (dim them) */
+    function dMarkCompleted() {
+      [...dThread().children].forEach(el => el.classList.add('d-step-done'));
+    }
+
+    /* ─── Summary panel helpers ─── */
+    function sumSetDone(id) { const el = document.getElementById('sum-' + id + '-icon'); if (el) el.className = 'd-sum-icon done'; }
+    function sumShowEdit(id) { const el = document.getElementById('sum-' + id + '-edit'); if (el) el.style.display = ''; }
+    function sumSetContent(id, html) { const el = document.getElementById('sum-' + id + '-content'); if (el) el.innerHTML = html; }
+
+    function dUpdateSummaryCompany() {
+      sumSetContent('company', `
+        <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:3px;">Lakeshore Hospitality Group</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:5px;">Hospitality · Restaurants & Bars · Chicago, IL</div>
+        <div style="font-size:12px;color:#9ca3af;">Est. 2017 · 4 locations identified</div>
+      `);
+      sumSetDone('company'); sumShowEdit('company');
+    }
+
+    function dUpdateSummaryLocations(names) {
+      sumSetContent('locations', names.map(n => `<div class="d-sum-location-item"><div class="d-sum-loc-dot"></div>${n}</div>`).join(''));
+      sumSetDone('locations'); sumShowEdit('locations');
+    }
+
+    function dUpdateSummaryRoutes() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id));
+      sumSetContent('routes', activeLocs.map(l =>
+        `<div class="d-sum-location-item"><div class="d-sum-loc-dot"></div><strong>${l.route}</strong> · ${l.name} · ${l.days}</div>`
+      ).join(''));
+      sumSetDone('routes'); sumShowEdit('routes');
+    }
+
+    function dUpdateSummaryPricing() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id)).map(dAdjustedLoc);
+      const total = activeLocs.reduce((sum, l) => sum + l.priceNum, 0);
+      document.getElementById('sum-pricing').style.display = '';
+      document.getElementById('dOrderSub').textContent = 'Quote ready';
+      sumSetContent('pricing', `
+        <div class="d-sum-price-rows">
+          ${activeLocs.map(l => `<div class="d-sum-price-row"><span class="d-sum-price-label">${l.name}</span><span class="d-sum-price-val">${l.price}</span></div>`).join('')}
+        </div>
+        <hr class="d-sum-divider">
+        <div class="d-sum-total-row"><span class="d-sum-total-label">Monthly total</span><span class="d-sum-total-val">$${total}</span></div>
+        <div class="d-sum-terms-card">
+          <div class="d-sum-terms-head">Service agreement summary</div>
+          <div class="d-sum-terms-row"><span class="d-sum-terms-lbl">Billing cycle</span><span class="d-sum-terms-val">Monthly · invoiced 1st of each month</span></div>
+          <div class="d-sum-terms-row"><span class="d-sum-terms-lbl">Payment</span><span class="d-sum-terms-val">Net-30 · no card required today</span></div>
+          <div class="d-sum-terms-row"><span class="d-sum-terms-lbl">Cancellation</span><span class="d-sum-terms-val">30 days written notice</span></div>
+          <div class="d-sum-terms-row"><span class="d-sum-terms-lbl">Commitment</span><span class="d-sum-terms-val">Month-to-month</span></div>
+          <div class="d-sum-terms-row"><span class="d-sum-terms-lbl">Price review</span><span class="d-sum-terms-val">Annual · CPI-indexed</span></div>
+          <label class="d-sum-terms-accept">
+            <input type="checkbox" id="d-terms-cb" onchange="document.getElementById('d-confirm-btn').disabled = !this.checked">
+            <span>I have read and agree to these service terms</span>
+          </label>
+        </div>
+        <button class="d-sum-cta" id="d-confirm-btn" onclick="dS10()" disabled>Confirm &amp; Start Service →</button>
+        <div class="d-sum-cta-sub">No payment today · First invoice May 1st</div>
+      `);
+      sumSetDone('pricing');
+    }
+
+    function dEditSection(section) {
+      const anchors = { company: 'anchor-company', locations: 'anchor-locs', routes: 'anchor-routes' };
+      const id = anchors[section];
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
+
+    function dProgress(step) {
+      for (let i = 1; i <= 5; i++) {
+        const sp = document.getElementById('dp' + i);
+        const sc = document.getElementById('dc' + i);
+        if (sp) sp.className = 'd-step' + (i < step ? ' done' : i === step ? ' active' : '');
+        if (sc) sc.className = 'd-step-connector' + (i < step ? ' done' : '');
+      }
+    }
+
+    function dStart() {
+      const input = document.getElementById('d-input');
+      dInputVal = (input.value.trim()) || 'LHG';
+      document.getElementById('d-co-name').textContent = 'Lakeshore Hospitality Group';
+      document.getElementById('d-co-type').textContent = 'Hospitality · Restaurants & Bars · Chicago, IL';
+      document.getElementById('d-landing').style.display = 'none';
+      document.getElementById('d-convo').style.display = 'block';
+      document.getElementById('d-thread').innerHTML = '';
+      dDisableInput();
+      dProgress(1);
+      dAddCustomer(dInputVal, 'typed');
+      setTimeout(dS1, 700);
+    }
+
+    function dReset() {
+      document.getElementById('d-landing').style.display = 'block';
+      document.getElementById('d-convo').style.display = 'none';
+      document.getElementById('d-setup').style.display = 'none';
+      document.getElementById('d-done').style.display = 'none';
+      document.getElementById('d-thread').innerHTML = '';
+      document.getElementById('d-input').value = 'LHG';
+      dProgress(0);
+      document.getElementById('dOrderSub').textContent = 'Your service details build here as we go';
+      document.getElementById('sum-pricing').style.display = 'none';
+      document.getElementById('sum-company-icon').className = 'd-sum-icon';
+      document.getElementById('sum-locations-icon').className = 'd-sum-icon';
+      document.getElementById('sum-routes-icon').className = 'd-sum-icon';
+      document.getElementById('sum-company-edit').style.display = 'none';
+      document.getElementById('sum-locations-edit').style.display = 'none';
+      document.getElementById('sum-routes-edit').style.display = 'none';
+      sumSetContent('company', '<div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:36px"></div><div class="d-sum-pending-dot" style="width:24px"></div></div>');
+      sumSetContent('locations', '<div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:20px"></div><div class="d-sum-pending-dot" style="width:32px"></div></div>');
+      sumSetContent('routes', '<div class="d-sum-pending-row"><div class="d-sum-pending-dot" style="width:28px"></div><div class="d-sum-pending-dot" style="width:18px"></div></div>');
+      sumSetContent('pricing', '');
+    }
+
+    // Step 1: Company Research working
+    function dS1() {
+      dAddWorking('Company Research Agent', 'Searching Illinois business registry for &ldquo;' + dInputVal + '&rdquo;…');
+      setTimeout(() => {
+        document.querySelector('.d-wlive .d-working-text').textContent = '"LHG" matched to Lakeshore Hospitality Group — resolving legal entity… Found: Lakeshore Hospitality LLC, Chicago IL.';
+        setTimeout(dS2, 1100);
+      }, 1500);
+    }
+
+    // Step 2: Company profile result
+    function dS2() {
+      dRemoveWorking();
+      dProgress(1);
+      dAddAgent('Company Research Agent', `
+        Found it — <strong>Lakeshore Hospitality Group (LHG)</strong> is a hospitality group operating restaurants, bars, and venues across Chicago, IL.
+        <div class="d-card">
+          <div class="d-card-head">Company details</div>
+          <div class="d-card-row"><span class="d-card-label">Legal name</span><span class="d-card-value">Lakeshore Hospitality LLC</span></div>
+          <div class="d-card-row"><span class="d-card-label">Industry</span><span class="d-card-value">Hospitality · Restaurants &amp; Bars</span></div>
+          <div class="d-card-row"><span class="d-card-label">Location</span><span class="d-card-value">Chicago metropolitan area · Illinois</span></div>
+          <div class="d-card-row"><span class="d-card-label">Founded</span><span class="d-card-value">2017 · Illinois registered</span></div>
+          <div class="d-card-row"><span class="d-card-label">Employees</span><span class="d-card-value">~120 staff across 4 locations</span></div>
+          <div class="d-card-row" style="color:#15803d;"><span class="d-card-label" style="color:#15803d;">Waste profile</span><span class="d-card-value" style="color:#15803d;">High-volume food service · General waste, food waste &amp; glass recycling</span></div>
+        </div>
+        Is that the right company?
+      `);
+      dAddReplies([
+        { text: 'Yes, that\'s us ✓', fn: 'dS3' },
+        { text: 'That\'s not the right company', fn: 'dSNoMatch' }
+      ]);
+    }
+
+    function dSNoMatch() {
+      dAddAgent('WasteConnect', `<p>No problem — let's try again. Type a different company name or an address and I'll search again.</p>`);
+      dEnableInput('Lakeshore Hospitality Group', dSNoMatchRetry, 'Type company name or address…');
+    }
+
+    function dSNoMatchRetry() {
+      dAddWorking('Company Research Agent', 'Searching again…');
+      setTimeout(() => {
+        document.querySelector('.d-wlive .d-working-text').textContent = 'Checking public registries and business listings…';
+        setTimeout(() => {
+          dRemoveWorking();
+          dAddAgent('Company Research Agent', `
+            <p>I found a match for your search:</p>
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-top:8px;">
+              <div style="font-weight:600;color:#14532d;font-size:15px;">Lakeshore Hospitality LLC</div>
+              <div style="color:#374151;font-size:13px;margin-top:3px;">Legal registered name · Hospitality / Restaurants & Bars</div>
+              <div style="color:#6b7280;font-size:12px;margin-top:2px;">Illinois, United States</div>
+            </div>
+            <p style="margin-top:10px;">Is this the right company?</p>`);
+          dAddReplies([
+            { text: 'Yes, that\'s us', fn: 'dS3' },
+            { text: 'Still not right — connect me with someone', fn: 'dSEscalate' }
+          ]);
+        }, 1800);
+      }, 900);
+    }
+
+    // Step 3: Location Discovery working
+    function dS3() {
+      dMarkCompleted();
+      dUpdateSummaryCompany();
+      sumSetContent('locations', '<div style="font-size:12px;color:#9ca3af;font-style:italic;">Discovering locations…</div>');
+      dProgress(2);
+      dAddWorking('Multi-Location Discovery Agent', 'Scanning Illinois business listings and permit records for LHG…');
+      setTimeout(() => {
+        document.querySelector('.d-wlive .d-working-text').textContent = '2 venues found… checking license registry… 2 more confirmed… 4 total.';
+        setTimeout(dS4, 1100);
+      }, 1700);
+    }
+
+    // Step 4: Locations found — selectable cards
+    function dS4() {
+      dRemoveWorking();
+      const locations = dLocData;
+
+      const el = document.createElement('div');
+      el.className = 'd-agent-msg';
+      el.innerHTML = `
+        <div class="d-agent-avatar av-loc">📍</div>
+        <div>
+          <div class="d-agent-name">Multi-Location Discovery Agent</div>
+          <div class="d-agent-bubble">
+            <p>We found <strong>4 locations</strong> registered under Lakeshore Hospitality LLC. Select the ones that are active — deselect any that don't apply.</p>
+            <div class="d-info-grid" id="locGrid">
+              ${locations.map(l => `
+                <div class="d-info-card selectable selected" id="${l.id}" onclick="dToggleLoc('${l.id}')">
+                  <div class="d-info-card-hd">
+                    <div class="d-info-card-title">${l.name}</div>
+                    <div class="d-info-card-check"></div>
+                  </div>
+                  <div class="d-info-card-body">
+                    <div class="d-info-card-primary">${l.addr}</div>
+                    <div class="d-info-card-sub"><span class="d-card-tag ${l.tagCls}">${l.tag}</span></div>
+                  </div>
+                </div>`).join('')}
+            </div>
+            <button class="d-loc-confirm" id="locConfirmBtn" onclick="dConfirmLocs()">Confirm 4 locations →</button>
+          </div>
+        </div>`;
+      dThread().appendChild(el);
+      dScroll();
+    }
+
+    function dToggleLoc(id) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.classList.toggle('deselected');
+      card.classList.toggle('selected');
+      const count = document.querySelectorAll('#locGrid .d-info-card:not(.deselected)').length;
+      const btn = document.getElementById('locConfirmBtn');
+      if (count === 0) {
+        btn.textContent = 'Select at least one location';
+        btn.disabled = true;
+        btn.style.background = '#9ca3af';
+      } else {
+        btn.textContent = `Confirm ${count} location${count !== 1 ? 's' : ''} →`;
+        btn.disabled = false;
+        btn.style.background = '';
+      }
+    }
+
+    function dConfirmLocs() {
+      dAdjustments = { grease: false, daily: false };
+      dActiveLocs = [...document.querySelectorAll('#locGrid .d-info-card:not(.deselected)')].map(c => c.id);
+      const selected = dLocData.filter(l => dActiveLocs.includes(l.id)).map(l => l.name);
+      // Lock the cards
+      document.querySelectorAll('#locGrid .d-info-card').forEach(c => {
+        c.style.cursor = 'default';
+        c.onclick = null;
+      });
+      document.getElementById('locConfirmBtn').style.display = 'none';
+      dAddCustomer(`${selected.length} location${selected.length !== 1 ? 's' : ''} confirmed ✓`, 'tapped');
+      dDisableInput();
+      // Update order panel with confirmed locations
+      dUpdateSummaryLocations(selected);
+      sumSetContent('routes', '<div style="font-size:12px;color:#9ca3af;font-style:italic;">Analysing each site…</div>');
+      setTimeout(dS5, 600);
+    }
+
+    // Step 5: Route & Address Matching
+    function dS5() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id));
+      const n = activeLocs.length;
+      dMarkCompleted();
+      dProgress(3);
+      // Show consolidated map — injected after dMarkCompleted so it stays bright
+      const mapEl = document.createElement('div');
+      mapEl.className = 'd-agent-msg';
+      mapEl.innerHTML = `
+        <div class="d-agent-avatar av-loc">📍</div>
+        <div>
+          <div class="d-agent-name">Multi-Location Discovery Agent</div>
+          <div class="d-agent-bubble">
+            <p>Got it — all <strong>${n} location${n !== 1 ? 's' : ''} confirmed</strong>. Here's where they are across the Chicago metro.</p>
+            <div class="d-all-map-wrap">
+              <div id="dLocsMap" style="width:100%;height:200px;"></div>
+              <div class="d-all-map-label">${n} location${n !== 1 ? 's' : ''} · Chicago metro</div>
+            </div>
+          </div>
+        </div>`;
+      dThread().appendChild(mapEl);
+      dScroll();
+      // Init Leaflet map after DOM is ready
+      setTimeout(() => {
+        const map = L.map('dLocsMap', { zoomControl: false, attributionControl: false })
+          .setView([41.91, -87.655], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const icon = L.divIcon({
+          className: '',
+          html: '<div style="width:14px;height:14px;background:#15803D;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.35);"></div>',
+          iconSize: [14, 14], iconAnchor: [7, 7]
+        });
+        activeLocs.forEach(l => L.marker([l.lat, l.lng], { icon }).bindTooltip(l.name, { permanent: false, direction: 'top' }).addTo(map));
+      }, 50);
+      const addrSnippet = activeLocs.map(l => l.addr.split(',')[0]).join('… ');
+      dAddWorking('Address Matching Agent', `Checking ERP coverage near ${addrSnippet}…`);
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddWorking('Route &amp; Schedule Agent', `${n} account${n !== 1 ? 's' : ''} confirmed — mapping routes and schedules…`);
+        setTimeout(dS6, 2000);
+      }, 1800);
+    }
+
+    // Step 6: Route result
+    function dS6() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id));
+      const n = activeLocs.length;
+      dRemoveWorking();
+      dAddAgent('Route &amp; Schedule Agent', `
+        <p>All ${n} location${n !== 1 ? 's' : ''} are covered and on existing routes — ready to go.</p>
+        <div class="d-info-grid">
+          ${activeLocs.map(l => {
+            const note = l.id === 'loc3' && !dActiveLocs.includes('loc2') ? 'Standard collection' : l.routeNote;
+            return `<div class="d-info-card">
+              <div class="d-info-card-hd">
+                <div class="d-info-card-title">${l.name}</div>
+                <span class="d-route-badge">${l.route}</span>
+              </div>
+              <div class="d-info-card-body">
+                <div class="d-info-card-primary">📅 ${l.days}</div>
+                <div class="d-info-card-sub">${note}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      `);
+      dAddReplies([
+        { text: 'Looks good — what do we need?', fn: 'dS6b' }
+      ]);
+    }
+
+    // Step 6b: Service needs per location
+    function dS6b() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id));
+      dMarkCompleted();
+      dAddWorking('Service Analysis Agent', 'Cross-referencing site profiles with service requirements…');
+      setTimeout(() => {
+        dRemoveWorking();
+        const cardsHtml = activeLocs.map(l => {
+          const svcConfig = l.id === 'loc3' && !dActiveLocs.includes('loc2')
+            ? 'Weekly · Thursdays · Route 9C'
+            : l.serviceConfig;
+          return `
+            <div class="d-info-card">
+              <div class="d-info-card-hd">
+                <div class="d-info-card-title">${l.name}</div>
+                <span class="d-card-tag ${l.tagCls}">${l.tag}</span>
+              </div>
+              <div class="d-info-card-body">
+                <div class="d-info-card-primary green">✦ ${l.serviceInsight}</div>
+                <div class="d-info-card-sub">${svcConfig}</div>
+              </div>
+            </div>`;
+        }).join('');
+        dAddAgent('Service Analysis Agent', `
+          <p>Here's what each location needs based on their profile and size:</p>
+          <div class="d-info-grid">${cardsHtml}</div>
+          <div class="d-rec-adjust" style="margin-top:10px;">Not quite right? Tell me — e.g. <em>"the Grill needs grease trap collection"</em> or <em>"HQ is very low volume"</em></div>
+        `);
+        dEnableInput('The Grill needs grease trap collection', dS6bAdjustResponse, 'Describe anything that needs adjusting…');
+        dAddReplies([{ text: 'This all looks right — build my quote →', fn: 'dConfirmContainers' }]);
+      }, 1600);
+    }
+
+    function dS6bAdjustResponse() {
+      const raw = document.getElementById('d-chat-input').value.trim();
+      dDisableInput();
+      dAddCustomer(raw, 'typed');
+      const lower = raw.toLowerCase();
+      const hasGrease    = /grease|trap|fat|fog|interceptor|oily|oil/.test(lower);
+      const hasDaily     = /daily|every day|each day|7.?day|seven day|day.*collect|collect.*day|more often|pickup every/.test(lower);
+      const hasCafeteria = /cafeteria|canteen|staff.*eat|break.?room|kitchen|staff.*food|staff.*lunch/.test(lower);
+      const hasLowVol    = /low.?vol|low.?traffic|quiet|minimal|hardly|not much|very little|small office|light use|barely|rarely|not a lot/.test(lower);
+      const hasExtra     = /extra|additional|more freq|overflow|overfill|always full|too full|filling up|not enough|lot of waste|lots of|high vol|big vol/.test(lower);
+
+      const notes = [];
+      const replies = [];
+
+      if (hasGrease) {
+        dAdjustments.grease = true;
+        replies.push(`FOG (grease trap) collection added to <strong>Lakeshore Grill</strong>`);
+        notes.push('FOG collection added · typically +$35–55/month');
+      }
+      if (hasDaily) {
+        dAdjustments.daily = true;
+        replies.push(`daily general waste collection noted for <strong>Lakeshore Grill</strong>`);
+        notes.push('Daily collection frequency flagged — will be priced accordingly');
+      }
+      if (hasCafeteria) {
+        replies.push(`staff cafeteria noted — organic waste stream added`);
+        notes.push('Organic/food waste stream added per site');
+      }
+      if (hasLowVol) {
+        replies.push(`low-volume flag noted — container or frequency will be reviewed`);
+        notes.push('Low-volume adjustment flagged');
+      }
+      if (hasExtra) {
+        replies.push(`high-volume flag noted — container upsize or extra collection to be applied`);
+        notes.push('High-volume adjustment flagged');
+      }
+
+      let reply, note;
+      if (replies.length > 0) {
+        reply = `Got it — ` + replies.join(', and ') + `.`;
+        note  = notes.join(' · ');
+      } else {
+        reply = `Got it — noted. I'll factor that in before building the quote.`;
+        note  = 'Adjustment noted';
+      }
+
+      dAddWorking('Service Analysis Agent', 'Updating service configuration…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Service Analysis Agent', `<p>${reply}</p><p style="font-size:12px;color:#9ca3af;margin-top:6px;">✦ ${note}</p>`);
+        dAddReplies([{ text: 'That covers it — build my quote →', fn: 'dConfirmContainers' }]);
+      }, 1200);
+    }
+
+    function dConfirmContainers() {
+      const btn = document.querySelector('.d-container-confirm-btn');
+      if (btn) btn.disabled = true;
+      dAddCustomer('Containers confirmed ✓', 'tapped');
+      dDisableInput();
+      dUpdateSummaryRoutes();
+      sumSetContent('pricing', '<div style="font-size:12px;color:#9ca3af;font-style:italic;">Calculating your quote…</div>');
+      document.getElementById('sum-pricing').style.display = '';
+      dProgress(4);
+      setTimeout(dS7, 600);
+    }
+
+    // Step 7: Straight to pricing
+    function dS7() {
+      dMarkCompleted();
+      dProgress(4);
+      sumSetContent('pricing', '<div style="font-size:12px;color:#9ca3af;font-style:italic;">Building your quote…</div>');
+      setTimeout(dS7b, 400);
+    }
+
+    function dS7AdjustResponse() {
+      const raw = document.getElementById('d-chat-input').value.trim();
+      dDisableInput();
+      dAddCustomer(raw, 'typed');
+      const lower = raw.toLowerCase();
+      const hasGrease = /grease|trap|fat|fog|interceptor/.test(lower);
+      const hasRemove = /not active|remove|deselect|skip|exclude/.test(lower);
+
+      if (hasGrease) {
+        dAddWorking('Pricing Agent', 'Noted — checking grease trap collection options for Lakeshore Grill…');
+        setTimeout(() => {
+          dRemoveWorking();
+          dAddAgent('Pricing Agent', `<p>Got it — grease trap collection is a separate stream from general waste. I'll add that to <strong>Lakeshore Grill</strong> and include the surcharge in your quote.</p><p style="font-size:12px;color:#9ca3af;margin-top:6px;">✦ FOG (fats, oils & grease) collection added · typically +$35–55/month</p>`);
+          dAddReplies([{ text: 'That covers it — build my quote', fn: 'dS7b' }]);
+        }, 1400);
+        return;
+      }
+
+      dAddWorking('Pricing Agent', 'Noted — removing The Tap Room from the configuration…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Pricing Agent', `<p>Got it — <strong>The Tap Room</strong> is removed. Recalculating for 3 active locations.</p>`);
+        setTimeout(() => {
+          dAddWorking('Pricing Agent', 'Recalculating rates for 3 locations…');
+          setTimeout(dS8Adjusted, 2000);
+        }, 700);
+      }, 1400);
+    }
+
+    function dS8Adjusted() {
+      dRemoveWorking();
+      dAddAgent('Pricing Agent', `
+        <p>Here's your updated quote for 3 locations.</p>
+        <div class="d-proposal">
+          <div class="d-prop-head">
+            <div>
+              <div class="d-prop-head-title">Lakeshore Hospitality Group · 3 locations</div>
+              <div class="d-prop-head-sub">Chicago · Hospitality-configured · Food waste &amp; recycling included</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-total-label">Total per month</div>
+              <div class="d-prop-amount">$412</div>
+              <div class="d-prop-per">/month</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lakeshore Grill</div>
+              <div class="d-prop-site-detail">3× weekly · 4-yard dumpster · Food waste · Cardboard recycling</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$245/mo</div>
+              <div class="d-prop-note">Restaurant rate · Food waste included</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lakeshore Social</div>
+              <div class="d-prop-site-detail">Weekly · 2-yard dumpster · Food waste · Recycling · Route 9C</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$115/mo</div>
+              <div class="d-prop-note">Caf\u00e9 rate</div>
+            </div>
+          </div>
+          <div class="d-prop-row">
+            <div class="d-prop-site">
+              <div class="d-prop-site-name">Lakeshore HQ</div>
+              <div class="d-prop-site-detail">Weekly · 96-gal cart · Paper recycling · Standard office</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-price">$52/mo</div>
+              <div class="d-prop-note">Standard office rate</div>
+            </div>
+          </div>
+        </div>
+      `);
+      dAddReplies([
+        { text: 'That works — $412/month \u2713', fn: 'dPriceAccepted' }
+      ]);
+      dEnableInput('That still feels high — can you do better?', () => dS9Adjusted());
+    }
+
+    function dS9Adjusted() {
+      dAddWorking('Negotiation Agent', 'Checking margins for 3-location account on Routes 9C and 11A…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Negotiation Agent', `
+          <p>Best for 3 locations — consolidating Grill and Social on Route 9C brings it down:</p>
+          <div class="d-nego-card">
+            <div class="d-nego-new-price">$375/month</div>
+            <div class="d-nego-saving">Down from $412 — you save <strong>$37/month · $444/year</strong></div>
+            <div class="d-nego-reason">Route 9C consolidation across Grill + Social. Best rate for this config.</div>
+          </div>
+        `);
+        dAddReplies([
+          { text: 'Yes, lock in $375/month \u2713', fn: 'dPriceAccepted' },
+          { text: 'Still not quite right', fn: 'dSEscalate' }
+        ]);
+      }, 2000);
+    }
+
+    function dS7b() {
+      dAddWorking('Pricing Agent', 'Calculating rates from route data and comparable accounts on Routes 9C and 11A…');
+      setTimeout(dS8, 2400);
+    }
+
+    // Step 8: Proposal
+    function dS8() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id)).map(dAdjustedLoc);
+      const n = activeLocs.length;
+      const listTotal = activeLocs.reduce((sum, l) => sum + l.priceNum, 0);
+      const hasSharedRun = dActiveLocs.includes('loc2') && dActiveLocs.includes('loc3');
+      const saving = hasSharedRun ? 50 : Math.round(listTotal * 0.088);
+      const negotiated = listTotal - saving;
+      dRemoveWorking();
+      const reason = hasSharedRun
+        ? 'Route 11A consolidation — Tap Room &amp; Social share a Tues/Fri run.'
+        : 'Multi-site route consolidation across all confirmed locations.';
+      dAddAgent('Pricing Agent', `
+        <p>Here's your quote. Each site priced for what it actually needs.</p>
+        <div class="d-proposal">
+          <div class="d-prop-head">
+            <div>
+              <div class="d-prop-head-title">Lakeshore Hospitality Group · ${n} location${n !== 1 ? 's' : ''}</div>
+              <div class="d-prop-head-sub">Chicago · Hospitality-configured · Food waste &amp; recycling included</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="d-prop-total-label">List price</div>
+              <div class="d-prop-amount">$${listTotal}</div>
+              <div class="d-prop-per">/month</div>
+            </div>
+          </div>
+          ${activeLocs.map(l => {
+            const detail = l.id === 'loc3' && !dActiveLocs.includes('loc2')
+              ? 'Weekly · 2-yard dumpster · Food waste · Recycling · Route 9C'
+              : l.priceDetail;
+            const note = l.id === 'loc3' && !dActiveLocs.includes('loc2')
+              ? 'Caf\u00e9 rate'
+              : l.priceNote;
+            return `<div class="d-prop-row">
+              <div class="d-prop-site">
+                <div class="d-prop-site-name">${l.name}</div>
+                <div class="d-prop-site-detail">${detail}</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="d-prop-price">${l.price}</div>
+                <div class="d-prop-note">${note}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+        <p style="margin-top:11px;font-size:13px;">I've also applied a <strong>route consolidation discount</strong> — all ${n} sites share existing routes:</p>
+        <div class="d-nego-card">
+          <div class="d-nego-new-price">$${negotiated} <span style="font-size:14px;font-weight:500;color:#6b7280;">/month</span></div>
+          <div class="d-nego-saving">You save <strong>$${saving}/month</strong> vs. individual site pricing · $${saving * 12}/year</div>
+          <div class="d-nego-reason">${reason}</div>
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:#6b7280;">Confirm in the summary panel when you're ready — or type here if anything still needs adjusting.</p>
+      `);
+      dUpdateSummaryPricing();
+      dAddReplies([{ text: `Confirmed — $${negotiated}/month ✓`, fn: 'dPriceAccepted' }]);
+      dEnableInput('That still feels high — can you do better?', () => dS9());
+    }
+
+    // Step 9: Negotiation
+    function dS9() {
+      dAddWorking('Negotiation Agent', 'Checking what further savings are available…');
+      setTimeout(dS9b, 2000);
+    }
+
+    function dS9b() {
+      const activeLocs = dLocData.filter(l => dActiveLocs.includes(l.id)).map(dAdjustedLoc);
+      const consolidated = activeLocs.reduce((sum, l) => sum + l.priceNum, 0);
+      const hasSharedRun = dActiveLocs.includes('loc2') && dActiveLocs.includes('loc3');
+      const saving = hasSharedRun ? 50 : Math.round(consolidated * 0.088);
+      const after12mo = consolidated - saving - 30;
+      const after24mo = consolidated - saving - 50;
+      dRemoveWorking();
+      dAddAgent('Negotiation Agent', `
+        <p>The route consolidation discount is already applied — that's the best I can do on rate alone. If you're open to committing to a term, I can bring it down further:</p>
+        <div class="d-card">
+          <div class="d-card-head">Term discount options</div>
+          <div class="d-card-row"><span class="d-card-label">12-month term</span><span class="d-card-value" style="color:#15803d;font-weight:700;">$${after12mo}/mo — save an extra $30/month</span></div>
+          <div class="d-card-row"><span class="d-card-label">24-month term</span><span class="d-card-value" style="color:#15803d;font-weight:700;">$${after24mo}/mo — save an extra $50/month</span></div>
+          <div class="d-card-row"><span class="d-card-label">No commitment</span><span class="d-card-value">$${consolidated - saving}/mo · cancel with 30 days notice</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:#6b7280;">All three include the same service. The term options just lock the rate.</p>
+      `);
+      dAddReplies([
+        { text: `12-month — $${after12mo}/month ✓`, fn: 'dPriceAccepted' },
+        { text: `24-month — $${after24mo}/month ✓`, fn: 'dPriceAccepted' },
+        { text: `No commitment — $${consolidated - saving}/month ✓`, fn: 'dPriceAccepted' }
+      ]);
+      dEnableInput('Still not quite right', () => dSEscalate());
+    }
+
+    function dSEscalate() {
+      dAddWorking('Escalation Agent', 'Packaging discovery brief for commercial team…');
+      setTimeout(() => {
+        dRemoveWorking();
+        dAddAgent('Escalation Agent', `
+          <p>Understood. I've sent a brief to our commercial team. Someone will call within 2 hours — they'll have everything in front of them.</p>
+          <div class="d-card" style="margin-top:10px;">
+            <div class="d-card-head" style="background:#fef9c3;color:#92400e;">Sales Brief — sent to commercial team</div>
+            <div class="d-card-row"><span class="d-card-label">Company</span><span class="d-card-value">Lakeshore Hospitality LLC · Hospitality · Chicago IL</span></div>
+            <div class="d-card-row"><span class="d-card-label">Locations</span><span class="d-card-value">4 sites — restaurant, bar, caf&eacute;, corporate office</span></div>
+            <div class="d-card-row"><span class="d-card-label">Last offer</span><span class="d-card-value">$510/mo (from $560) · Route 11A consolidation</span></div>
+            <div class="d-card-row"><span class="d-card-label">Sticking point</span><span class="d-card-value">Price — &ldquo;still not quite right&rdquo; after counter</span></div>
+            <div class="d-card-row"><span class="d-card-label">Suggested approach</span><span class="d-card-value">Extended term or volume discount may close. Sites confirmed — no further discovery.</span></div>
+          </div>
+          <p style="margin-top:10px;font-size:12px;color:#9ca3af;">Full context included — the rep won't need you to repeat anything.</p>
+        `);
+      }, 1200);
+    }
+
+    // Price accepted in chat — direct to sidebar terms
+    function dPriceAccepted() {
+      dDisableInput();
+      dAddAgent('Pricing Agent', `<p>Locked in. Review the service terms in the summary panel — check the box and confirm when you're ready.</p>`);
+      const termsCard = document.querySelector('.d-sum-terms-card');
+      if (termsCard) {
+        termsCard.classList.remove('d-terms-pulse');
+        void termsCard.offsetWidth; // force reflow to restart animation
+        termsCard.classList.add('d-terms-pulse');
+      }
+      dScroll();
+    }
+
+    // Step 10: Confirm → account setup
+    function dS10() {
+      dProgress(5);
+      setTimeout(() => {
+        document.getElementById('d-convo').style.display = 'none';
+        document.getElementById('d-setup').style.display = 'block';
+      }, 600);
+    }
+
+    function dSetupComplete() {
+      document.getElementById('d-setup').style.display = 'none';
+      document.getElementById('d-done').style.display = 'block';
+    }
+
+
+    /* ═══════════════════════════════════
+       MOBILE — INTERACTIVE
+    ═══════════════════════════════════ */
+    const mThread = () => document.getElementById('m-thread');
+    let mStarted = false;
+    let mFlowState = 'address'; // address | chat | pricing | negotiating | escalated
+    let mNegotiateCount = 0;
+
+    function mHandleInput() {
+      const input = document.getElementById('m-input');
+      const val = input.value.trim();
+      if (!val) return;
+      if (mFlowState === 'address') {
+        mStarted = true;
+        mFlowState = 'chat';
+        document.getElementById('m-chat-bar').style.display = 'none'; // hides while address processing only
+        mAddCustomer(val);
+        input.value = '';
+        setTimeout(mS1, 600);
+      } else {
+        mFreeInput(val);
+      }
+    }
+
+    function mEnableChat() {
+      const bar = document.getElementById('m-chat-bar');
+      const input = document.getElementById('m-input');
+      bar.style.display = 'flex';
+      input.placeholder = 'Ask a question or negotiate…';
+      input.value = '';
+      input.disabled = false;
+    }
+
+    function mDisableInput() {
+      const input = document.getElementById('m-input');
+      input.disabled = true;
+      input.placeholder = '—';
+    }
+
+    function mFreeInput(val) {
+      if (!val) return;
+      document.getElementById('m-input').value = '';
+
+      // If reply buttons are visible, try to match speech to one of them first
+      const replyEls = document.querySelectorAll('.m-replies .m-qbtn');
+      if (replyEls.length) {
+        const lower = val.toLowerCase().trim();
+        const affirmative = /^(yes|yeah|yep|yup|correct|that.s (right|it|correct)|sure|ok|okay|looks good|perfect|sounds good|great|absolutely|definitely|confirm|go ahead|agreed)/.test(lower);
+        const negative = /^(no|nope|not (quite|right)|wrong|incorrect|actually|hang on)/.test(lower);
+        // Try keyword match against button text
+        let matched = null;
+        replyEls.forEach(btn => {
+          const btnText = btn.textContent.toLowerCase();
+          if (affirmative && (btnText.includes('yes') || btnText.includes('✓') || btnText.includes('looks') || btnText.includes('right') || btnText.includes('good') || btnText.includes('sign'))) {
+            if (!matched) matched = btn;
+          } else if (negative && (btnText.includes('not') || btnText.includes('no') || btnText.includes('still') || btnText.includes('wrong') || btnText.includes('change') || btnText.includes('something'))) {
+            if (!matched) matched = btn;
+          }
+          // Direct keyword overlap
+          const words = lower.split(/\s+/);
+          const overlap = words.filter(w => w.length > 3 && btnText.includes(w)).length;
+          if (overlap >= 2 && !matched) matched = btn;
+        });
+        if (!matched && affirmative) matched = replyEls[0]; // default yes → first button
+        if (matched) {
+          document.querySelectorAll('.m-replies').forEach(el => el.remove());
+          mAddCustomer(val);
+          matched.click();
+          return;
+        }
+      }
+
+      document.querySelectorAll('.m-replies').forEach(el => el.remove());
+      mAddCustomer(val);
+      const lower = val.toLowerCase();
+      const wantsHuman = /human|person|agent|someone|call|speak|talk|help/.test(lower);
+      const numMatch = val.match(/\b(\d{2,4})\b/);
+      const isCorrection = mFlowState === 'chat' && (numMatch || /sorry|actually|no it'?s|wrong|typo|meant/.test(lower));
+      const hasPets       = /\b(dog|cat|pet|puppy|kitten|rabbit|animal)\b/.test(lower);
+      const wantsLarger   = /overflow|too (small|full|little)|always full|not enough|more (waste|room|space)|big(ger)?|upsize/.test(lower);
+      const smallHousehold = (
+        // small number + context: "2 of us", "two people", "just 2 here", "only one person"
+        /\b[12]\b.{0,20}\b(of us|people|person|in the|here|live|living|household)\b/.test(lower) ||
+        /\b(one|two)\b.{0,20}\b(of us|people|person|in the|here|live|living|household)\b/.test(lower) ||
+        // solo living
+        /\b(on my own|by myself|live alone|living alone|just me|myself only|single occupant|i.m alone)\b/.test(lower) ||
+        // couple / partner phrasing
+        /\bme and (my |a )?(partner|wife|husband|girlfriend|boyfriend|roommate|housemate|spouse|other half)\b/.test(lower) ||
+        /\b(just|only) (us two|us both|the two of us|two of us)\b/.test(lower) ||
+        /\bwe.re (just |only )?(two|a couple|2\b)/.test(lower) ||
+        /\b(small household|small family|tiny household)\b/.test(lower)
+      );
+      const wantsSmaller  = smallHousehold
+                          || /too (big|large|much)|hardly|barely|rarely|light|less waste|downsize|smaller|live alone|living alone/.test(lower);
+      const noRecycle     = /don.?t recycle|no recycl|skip recycl|remove recycl|don.?t really recycl|not (big|much) (on|into) recycl|we don|hardly recycl/.test(lower);
+      const wantsOrganics = /organic|compost|food (waste|scrap)|garden|green (waste|bin)|brown bin/.test(lower);
+
+      if (isCorrection && numMatch) {
+        const corrected = numMatch[1];
+        mAddWorking('Updating your address…');
+        setTimeout(() => {
+          mRemoveWorking();
+          mAddAgent('Address Agent', `Updated to <strong>${corrected} Evergreen Terr., Chicago IL 60614</strong>. Right?`);
+          mAddReplies([{ text: 'Yes, that\'s it ✓', fn: 'mS1b' }, { text: 'Still not right', fn: 'mEscalate' }]);
+        }, 800);
+      } else if (wantsHuman || mFlowState === 'escalated') {
+        mEscalate();
+      } else if (hasPets && smallHousehold) {
+        mApplyAdjust('smallpets');
+      } else if (hasPets && !wantsSmaller) {
+        mApplyAdjust('largerpets');
+      } else if (wantsLarger) {
+        mApplyAdjust('larger');
+      } else if (wantsSmaller) {
+        mApplyAdjust('smaller');
+      } else if (noRecycle) {
+        mApplyAdjust('norecycle');
+      } else if (wantsOrganics) {
+        mApplyAdjust('organics');
+      } else if (/cheaper|lower|better|discount|too (much|high|expensive)|expensive|pricey|steep|reduce|price|cost|afford|deal/.test(lower)) {
+        mNegotiate();
+      } else {
+        setTimeout(() => {
+          mAddAgent('Service Agent', 'What\'s not right? I can upsize, remove recycling, or connect you with someone.');
+          mAddReplies([{ text: 'I\'d like to speak to someone', fn: 'mEscalate' }]);
+        }, 500);
+      }
+    }
+
+    function mNegotiate() {
+      mNegotiateCount++;
+      mFlowState = 'negotiating';
+      mAddWorking('Checking discounts…');
+      if (mNegotiateCount === 1) {
+        const discounted = mSelectedService.price.replace('$', '');
+        const offer = Math.max(parseInt(discounted) - 4, 20);
+        setTimeout(() => {
+          mRemoveWorking();
+          mAddAgent('Pricing Agent', `Best I can do: <strong>$${offer}/mo</strong> on this route. Lock it in?`);
+          mAddReplies([
+            { text: `Yes — $${offer}/month works for me ✓`, fn: 'mDone' },
+            { text: 'Still a bit high', fn: 'mNegotiate2' },
+            { text: 'I\'d like to speak to someone', fn: 'mEscalate' }
+          ]);
+          mEnableChat();
+        }, 1600);
+      }
+    }
+
+    function mNegotiate2() {
+      mAddWorking('Reviewing options…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Pricing Agent', `That\'s the floor. I can escalate — the team may have more flexibility.`);
+        mAddReplies([
+          { text: 'Connect me with the team', fn: 'mEscalate' },
+          { text: 'I\'ll take the discounted price ✓', fn: 'mDone' }
+        ]);
+      }, 1400);
+    }
+
+    function mEscalate() {
+      mFlowState = 'escalated';
+      mDisableInput();
+      mAddWorking('Connecting with team…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Service Agent', `
+          <p>Passed everything to our team. You won\'t need to repeat anything.</p>
+          <div class="m-schedule-card">
+            <div class="m-schedule-ico" style="background:#4338CA;"><span class="material-icons">support_agent</span></div>
+            <div>
+              <div class="m-schedule-title">Call within 2 hours</div>
+              <div class="m-schedule-sub">742 Evergreen Terr. · Context sent</div>
+            </div>
+          </div>
+        `);
+      }, 1600);
+    }
+
+    // ── Voice input ──
+    let mRecognition = null;
+    let mListening = false;
+
+    function mToggleVoice() {
+      if (mListening) { mStopVoice(); return; }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        mAddAgent('WasteConnect', 'Voice not supported here. Try Chrome or Safari.');
+        return;
+      }
+      mRecognition = new SpeechRecognition();
+      mRecognition.lang = 'en-US';
+      mRecognition.interimResults = true;
+      mRecognition.maxAlternatives = 1;
+
+      mRecognition.onstart = () => {
+        mListening = true;
+        document.getElementById('m-mic-btn').classList.add('listening');
+        document.getElementById('m-voice-indicator').classList.add('active');
+        document.getElementById('m-input').value = '';
+        document.getElementById('m-input').placeholder = 'Listening…';
+      };
+
+      mRecognition.onresult = (e) => {
+        const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+        document.getElementById('m-input').value = transcript;
+        document.getElementById('m-voice-text').textContent = transcript || 'Listening…';
+        if (e.results[e.results.length - 1].isFinal) {
+          mStopVoice();
+          setTimeout(mHandleInput, 300);
+        }
+      };
+
+      mRecognition.onerror = (e) => {
+        mStopVoice();
+        if (e.error !== 'no-speech') mAddAgent('WasteConnect', 'Couldn\'t catch that — try again or type it.');
+      };
+
+      mRecognition.onend = () => mStopVoice();
+      mRecognition.start();
+    }
+
+    function mStopVoice() {
+      mListening = false;
+      if (mRecognition) { try { mRecognition.stop(); } catch(e){} mRecognition = null; }
+      const btn = document.getElementById('m-mic-btn');
+      if (btn) btn.classList.remove('listening');
+      const ind = document.getElementById('m-voice-indicator');
+      if (ind) ind.classList.remove('active');
+      const input = document.getElementById('m-input');
+      if (input && !input.value) input.placeholder = 'Ask a question or negotiate…';
+    }
+
+    function mScroll() {
+      const t = mThread();
+      if (t) setTimeout(() => t.scrollTop = t.scrollHeight, 60);
+    }
+
+    function mAddAgent(agentName, html) {
+      const el = document.createElement('div');
+      el.className = 'm-agent-row';
+      el.innerHTML = `
+        <div>
+          <div class="m-agent-name-lbl">${agentName}</div>
+          <div class="m-bubble-agent">${html}</div>
+        </div>`;
+      mThread().appendChild(el);
+      mScroll();
+    }
+
+    function mAddWorking(text) {
+      const el = document.createElement('div');
+      el.className = 'm-working-row m-wlive';
+      el.innerHTML = `
+        <div class="m-working-bubble">
+          <div class="pulse-dot"></div><div class="pulse-dot"></div><div class="pulse-dot"></div>
+          <span class="m-working-text">${text}</span>
+        </div>`;
+      mThread().appendChild(el);
+      mScroll();
+      return el;
+    }
+
+    function mRemoveWorking() {
+      document.querySelectorAll('.m-wlive').forEach(el => el.remove());
+    }
+
+    function mAddCustomer(text) {
+      const el = document.createElement('div');
+      el.className = 'm-customer-row';
+      el.innerHTML = `<div class="m-bubble-customer">${text}</div>`;
+      mThread().appendChild(el);
+      mScroll();
+    }
+
+    function mAddReplies(options) {
+      const el = document.createElement('div');
+      el.className = 'm-replies';
+      options.forEach((o, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'm-qbtn' + (i > 0 ? ' sec' : '');
+        btn.textContent = o.text;
+        btn.addEventListener('click', () => mChoose(o.text, window[o.fn]));
+        el.appendChild(btn);
+      });
+      mThread().appendChild(el);
+      mScroll();
+    }
+
+    function mChoose(text, fn) {
+      document.querySelectorAll('.m-replies').forEach(el => el.remove());
+      mAddCustomer(text);
+      setTimeout(fn, 500);
+    }
+
+    function mLandingSubmit() {
+      const landingInput = document.getElementById('m-landing-input');
+      const val = landingInput.value.trim();
+      document.getElementById('m-landing').style.display = 'none';
+      document.getElementById('m-convo').style.display = 'flex';
+      mStarted = true;
+      mFlowState = 'chat';
+      document.getElementById('m-chat-bar').style.display = 'none';
+      if (val) {
+        mAddCustomer(val);
+        setTimeout(mS1, 600);
+      } else {
+        // No address typed — land in convo with prompt
+        mFlowState = 'address';
+        mStarted = false;
+        mAddAgent('WasteConnect', 'Hi! What\'s your address? We\'ll have a quote ready in seconds.');
+        document.getElementById('m-chat-bar').style.display = 'flex';
+        setTimeout(() => document.getElementById('m-input').focus(), 100);
+      }
+    }
+
+    let mLandingRecognition = null;
+    function mLandingVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Voice input is not supported in this browser.');
+        return;
+      }
+      const btn = document.getElementById('m-landing-mic');
+      if (mLandingRecognition) { mLandingRecognition.abort(); mLandingRecognition = null; btn.style.color = ''; return; }
+      mLandingRecognition = new SpeechRecognition();
+      mLandingRecognition.lang = 'en-US';
+      mLandingRecognition.interimResults = true;
+      btn.style.color = '#15803D';
+      mLandingRecognition.onresult = (e) => {
+        const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+        document.getElementById('m-landing-input').value = transcript;
+        if (e.results[e.results.length - 1].isFinal) {
+          mLandingRecognition = null;
+          btn.style.color = '';
+          setTimeout(mLandingSubmit, 400);
+        }
+      };
+      mLandingRecognition.onerror = () => { mLandingRecognition = null; btn.style.color = ''; };
+      mLandingRecognition.onend = () => { mLandingRecognition = null; btn.style.color = ''; };
+      mLandingRecognition.start();
+    }
+
+    function mSend() {
+      if (mStarted) return;
+      const input = document.getElementById('m-input');
+      const val = input.value.trim();
+      if (!val) return;
+      mStarted = true;
+      document.getElementById('m-chat-bar').style.display = 'none';
+      mAddCustomer(val);
+      setTimeout(mS1, 600);
+    }
+
+    function mS1() {
+      mAddWorking('Looking up your address…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Address Agent', `
+          Found it — <strong>742 Evergreen Terr., Chicago IL 60614</strong>. We cover Lincoln Park. Right?
+          <div class="m-addr-map-wrap"><div id="m-addr-map" style="width:100%;height:130px;"></div></div>
+        `);
+        setTimeout(() => {
+          const map = L.map('m-addr-map', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false })
+            .setView([41.9239, -87.6354], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+          const icon = L.divIcon({
+            className: '',
+            html: '<div style="width:14px;height:14px;background:#15803D;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.35);"></div>',
+            iconSize: [14,14], iconAnchor: [7,7]
+          });
+          L.marker([41.9239, -87.6354], { icon }).addTo(map);
+        }, 100);
+        mEnableChat();
+        mAddReplies([
+          { text: 'Yes, that\'s it ✓', fn: 'mS1b' },
+          { text: 'Not quite', fn: 'mS1b' }
+        ]);
+      }, 1800);
+    }
+
+    function mS1b() {
+      mAddAgent('Service Agent', 'One thing — house, apartment, or condo?');
+      mAddReplies([
+        { text: 'House', fn: 'mS2house' },
+        { text: 'Apartment', fn: 'mS2apt' },
+        { text: 'Condo', fn: 'mS2apt' }
+      ]);
+    }
+
+    let mPropType = 'house';
+    function mS2house() { mPropType = 'house'; mS2(); }
+    function mS2apt()   { mPropType = 'apt';   mS2(); }
+
+    function mS2() {
+      const isHouse = mPropType === 'house';
+      mAddWorking('Building your setup…');
+      setTimeout(() => {
+        mRemoveWorking();
+        const intro = isHouse
+          ? 'House on Route 7B — here\'s your setup:'
+          : 'Apartment on this street — here\'s your setup:';
+        mAddAgent('Service Agent', `
+          <p>${intro}</p>
+          <div class="m-package">
+            <div class="m-stream-card">
+              <div class="m-stream-img s-trash">
+                <img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/Red%20bin.png" alt="Trash cart">
+              </div>
+              <div class="m-stream-info">
+                <div class="m-stream-name">Standard Trash Cart</div>
+                <div class="m-stream-spec">${isHouse ? '2–3 bags · 3–4 person homes · Every Wed' : 'Compact · 1–2 person · Every Wed'}</div>
+                <div class="m-stream-price">${isHouse ? '$32' : '$24'}/month</div>
+              </div>
+            </div>
+            <div class="m-stream-card">
+              <div class="m-stream-img s-recycle">
+                <img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/green%20bin.png" alt="Recycling cart">
+              </div>
+              <div class="m-stream-info">
+                <div class="m-stream-name">Recycling Cart</div>
+                <div class="m-stream-spec">Paper, plastic, cans · Every other Wed</div>
+                <div class="m-stream-price">$12/month</div>
+              </div>
+            </div>
+            ${isHouse ? `
+            <div class="m-stream-card optional">
+              <div class="m-stream-img s-organics">
+                <img src="file:///C:/Users/Claire.Tighe/Downloads/Bins/brown%20bin.png" alt="Organics cart">
+              </div>
+              <div class="m-stream-info">
+                <div class="m-stream-name">Organics Cart</div>
+                <div class="m-stream-spec">Food scraps & yard waste · Every other Wed</div>
+                <div class="m-stream-price optional-price">+$8/month if you want it</div>
+              </div>
+            </div>` : ''}
+            <div class="m-package-total">
+              <div class="m-package-total-label">Monthly total${isHouse ? ' (without organics)' : ''}</div>
+              <div class="m-package-total-amount">${isHouse ? '$44' : '$36'}/mo</div>
+            </div>
+          </div>
+          <div class="m-rec-adjust">Not right? e.g. <em>"bin overflows"</em> or <em>"we don't recycle"</em></div>
+        `);
+        mAddReplies([
+          { text: isHouse ? 'That\'s the right setup ✓' : 'Looks good ✓', fn: 'mS3' }
+        ]);
+      }, 1800);
+    }
+
+    let mSelectedService = { trash: 'standard', price: '$44' };
+
+    function mApplyAdjust(type) {
+      const msgs = {
+        larger:     ['Upsized to our large cart — handles bigger households. Total: $51/mo.', { trash: 'large', price: '$51' }],
+        largerpets: ['Pets add waste — upsized your cart. Total: $51/mo.', { trash: 'large', price: '$51' }],
+        smallpets:  ['Small household + pet — standard cart covers it. Total stays $44/mo.', { trash: 'standard', price: '$44' }],
+        smaller:    ['Switched to compact cart for 1–2 people. Total: $36/mo.', { trash: 'compact', price: '$36' }],
+        norecycle:  ['Removed recycling. Trash only — $32/mo.', { trash: 'standard', price: '$32' }],
+        organics:   ['Added organics cart — every other Wed. Full setup: $52/mo.', { trash: 'standard', price: '$52' }],
+      };
+      const [msg, svc] = msgs[type];
+      mSelectedService = svc;
+      mAddWorking('Updating your setup…');
+      setTimeout(() => { mRemoveWorking(); mAddAgent('Service Agent', msg); mAddReplies([{ text: 'That works ✓', fn: 'mS3' }]); }, 800);
+    }
+
+    function mS3() {
+      mAddWorking('Confirming schedule…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Route Agent', `
+          <p>Route 7B — here's your schedule:</p>
+          <div class="m-schedule-card">
+            <div class="m-schedule-ico"><span class="material-icons">local_shipping</span></div>
+            <div>
+              <div class="m-schedule-title">Every Wed — Trash</div>
+              <div class="m-schedule-sub">${mSelectedService.trash} cart · Route 7B · By 11am</div>
+            </div>
+          </div>
+          <div class="m-schedule-card">
+            <div class="m-schedule-ico" style="background:#1d4ed8;"><span class="material-icons">recycling</span></div>
+            <div>
+              <div class="m-schedule-title">Every other Wed — Recycling</div>
+              <div class="m-schedule-sub">32-gal blue cart · Route 7B</div>
+            </div>
+          </div>
+        `);
+        setTimeout(mS4, 500);
+      }, 1400);
+    }
+
+    function mS4() {
+      mFlowState = 'pricing';
+      mAddWorking('Building your quote…');
+      setTimeout(() => {
+        mRemoveWorking();
+        mAddAgent('Pricing Agent', `
+          Here's your complete plan:
+          <div class="m-quote-card">
+            <div class="m-quote-head">
+              <div><div class="m-quote-title">Residential Collection</div><div class="m-quote-sub">${mSelectedService.trash} trash + recycling · Route 7B</div></div>
+              <div style="text-align:right"><div class="m-quote-total">${mSelectedService.price}</div><div class="m-quote-per">/month</div></div>
+            </div>
+          </div>
+          <p style="margin-top:10px;font-size:13px;color:#6b7280;">No lock-in. Cancel any time. First bill in 30 days.</p>
+        `);
+        mAddReplies([
+          { text: 'Sign me up ✓', fn: 'mDone' },
+          { text: 'I\'d like to speak to someone', fn: 'mEscalate' }
+        ]);
+      }, 2000);
+    }
+
+    function mDone() {
+      document.getElementById('m-convo').style.display = 'none';
+      document.getElementById('m-order').style.display = 'flex';
+    }
+
+    function mGoPayment() {
+      document.getElementById('m-order').style.display = 'none';
+      document.getElementById('m-payment').style.display = 'flex';
+    }
+
+    function mGoWelcome() {
+      document.getElementById('m-payment').style.display = 'none';
+      document.getElementById('m-welcome').style.display = 'flex';
+    }
+
+    function mReset() {
+      mStarted = false;
+      mFlowState = 'address';
+      mNegotiateCount = 0;
+      mSelectedService = { trash: '64-gal', price: '$44' };
+      document.getElementById('m-landing').style.display = 'flex';
+      document.getElementById('m-convo').style.display = 'none';
+      document.getElementById('m-order').style.display = 'none';
+      document.getElementById('m-payment').style.display = 'none';
+      document.getElementById('m-welcome').style.display = 'none';
+      document.getElementById('m-thread').innerHTML = '';
+      document.getElementById('m-chat-bar').style.display = 'flex';
+      document.getElementById('m-input').value = '742 Evergreen Terrace, Chicago';
+      document.getElementById('m-landing-input').value = '';
+    }
+
+  </script>
+</body>
+</html>

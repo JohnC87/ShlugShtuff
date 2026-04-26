@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI-Driven Customer Hub — Brian Higgins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;700;800&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0e0e0e;--bg2:#141414;--surface:#1e1e1e;--surface2:#242424;
+  --text:#f0f0f0;--text-dim:#666666;--text-mid:#aaaaaa;
+  --accent:#8b5cf6;--accent2:#ec4899;
+  --border:rgba(255,255,255,.07);--border-hi:rgba(255,255,255,.12);
+  --ff-serif:'DM Serif Display',serif;--ff-sans:'Syne',sans-serif;--ff-mono:'Geist Mono',monospace;
+  --side-w:200px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff-sans);background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+a{color:inherit;text-decoration:none}
+
+/* CURSOR */
+#cur{position:fixed;width:7px;height:7px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s}
+#cur-r{position:fixed;width:34px;height:34px;border:1px solid rgba(139,92,246,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .2s}
+body.hov #cur{width:14px;height:14px}
+body.hov #cur-r{width:52px;height:52px;border-color:rgba(139,92,246,.6)}
+
+/* PROGRESS */
+#sprog{position:fixed;top:0;left:var(--side-w);right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:800;transform-origin:left;transform:scaleX(0)}
+
+/* ── SIDE NAV ── */
+#side-nav{position:fixed;top:0;left:0;width:var(--side-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:32px 0;z-index:500}
+.sn-name{font-family:var(--ff-sans);font-size:.75rem;font-weight:700;letter-spacing:.04em;color:var(--text);padding:0 24px;margin-bottom:32px;line-height:1.4}
+.sn-back{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:8px 24px 20px;margin-bottom:20px;display:flex;align-items:center;gap:8px;transition:color .2s;border-bottom:1px solid var(--border)}
+.sn-back:hover{color:var(--accent)}
+.sn-back svg{width:10px;height:10px;flex-shrink:0}
+.sn-links{display:flex;flex-direction:column;gap:2px;padding:0 12px}
+.sn-a{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:8px 12px;border-radius:3px;transition:color .2s,background .2s;position:relative}
+.sn-a:hover{color:var(--text);background:var(--surface)}
+.sn-a.active{color:var(--accent)}
+.sn-a.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:14px;background:var(--accent);border-radius:1px}
+
+/* ── MAIN ── */
+#main{margin-left:var(--side-w)}
+
+/* ── HERO ── */
+#hero{display:flex;flex-direction:column}
+
+.hero-visual-band{
+  height:480px;border-bottom:1px solid var(--border);
+  overflow:hidden;padding:0;
+}
+
+/* Floating card */
+.ui-card{
+  background:var(--bg2);border:1px solid var(--border-hi);border-radius:16px;
+  padding:28px 32px;width:100%;max-width:400px;
+  box-shadow:0 48px 96px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
+}
+.uic-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.uic-title{font-family:var(--ff-sans);font-size:.82rem;font-weight:500;color:var(--text-mid)}
+.uic-close{font-size:.75rem;color:var(--text-dim);cursor:pointer}
+.uic-val{font-family:var(--ff-serif);font-size:2.4rem;letter-spacing:-.04em;line-height:1;margin-bottom:4px}
+.uic-val em{color:var(--accent);font-style:normal}
+.uic-sub{font-family:var(--ff-sans);font-size:.82rem;font-weight:600;color:var(--text-mid);margin-bottom:18px}
+.uic-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.18);border-radius:100px;padding:4px 12px;font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.06em;color:var(--accent);margin-bottom:22px}
+.uic-bdot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:bdpulse 2s infinite}
+@keyframes bdpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.5)}}
+
+/* Mini chart */
+.mini-chart{display:flex;gap:32px;margin-bottom:22px;height:72px;align-items:flex-end}
+.mc-group{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1}
+.mc-bars{display:flex;align-items:flex-end;gap:6px;height:56px}
+.mc-bar{width:22px;border-radius:3px 3px 0 0;position:relative;transition:height .4s}
+.mc-bar .mc-lbl{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-family:var(--ff-mono);font-size:9px;color:var(--text-mid);white-space:nowrap}
+.mc-bar.lo{background:var(--surface2);height:52%}
+.mc-bar.hi{background:var(--accent);height:100%}
+.mc-bar.lo2{background:var(--surface2);height:78%}
+.mc-bar.hi2{background:var(--accent);height:38%}
+.mc-gl{font-family:var(--ff-mono);font-size:9px;color:var(--text-dim);letter-spacing:.06em;text-align:center}
+
+.uic-cta{display:block;width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:13px;font-family:var(--ff-sans);font-size:.85rem;font-weight:700;text-align:center;cursor:pointer;letter-spacing:.01em;transition:opacity .2s,transform .15s}
+.uic-cta:hover{opacity:.88;transform:translateY(-1px)}
+
+/* Hero text */
+.hero-text-band{padding:98px 80px 72px}
+.hero-back{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);display:inline-flex;align-items:center;gap:8px;margin-bottom:40px;transition:color .2s}
+.hero-back:hover{color:var(--accent)}
+.hero-back svg{width:10px;height:10px}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--ff-sans);font-size:.82rem;font-weight:400;color:var(--text-dim);margin-bottom:22px}
+.hero-badge b{color:var(--text);font-weight:700}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:40px}
+.hero-tag{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px}
+.hero-h1{font-family:var(--ff-serif);font-size:clamp(2rem,3.5vw,3.2rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:40px;max-width:820px;font-weight:400}
+.hero-h1 .lo{color:var(--text-mid)}
+.hero-h1 strong{color:var(--text);font-style:italic}
+
+/* At-a-glance */
+.glance-lbl{font-family:var(--ff-sans);font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:20px}
+.glance-grid{display:grid;grid-template-columns:1fr auto;gap:48px;margin-bottom:48px;align-items:start}
+.glance-img{width:480px;border-radius:12px;flex-shrink:0;box-shadow:0 24px 60px rgba(0,0,0,0.15),0 4px 16px rgba(0,0,0,0.08);margin-top:-120px}
+.glance-img img{width:100%;display:block;border-radius:12px}
+.glance-body{font-size:.9rem;line-height:1.78;color:var(--text-mid)}
+.glance-body p+p{margin-top:14px}
+.glance-body strong{color:var(--text)}
+.glance-stats{display:flex;flex-direction:column;gap:20px}
+.gs{padding-left:16px;border-left:1px solid var(--border-hi)}
+.gs-n{font-family:var(--ff-serif);font-size:2.2rem;letter-spacing:-.03em;line-height:1}
+.gs-n em{font-style:italic;color:var(--accent)}
+.gs-l{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-top:4px}
+
+/* Meta row */
+.meta-row{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);padding-top:28px;margin-top:120px}
+.mc{padding-left:18px;position:relative}
+.mc:first-child{padding-left:0}
+.mc:not(:first-child)::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:1px;height:50%;background:var(--border-hi)}
+.mc-label{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.mc-val{font-size:.8rem;line-height:1.65;color:var(--text-mid)}
+
+/* ── HIGHLIGHTS ── */
+#highlights{}
+
+.hl-intro{padding:80px 80px 0}
+.hl-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:36px}
+.hl-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bdpulse 2s infinite}
+.hl-h2{font-family:var(--ff-serif);font-size:clamp(1.5rem,3vw,2.6rem);line-height:1.1;letter-spacing:-.025em;margin-bottom:20px;max-width:700px}
+.hl-h2 em{font-style:italic;color:var(--accent)}
+.hl-desc{font-size:.95rem;line-height:1.75;color:var(--text-mid);max-width:620px;margin-bottom:80px}
+
+/* Feature rows — alternating */
+.feat-list{display:flex;flex-direction:column}
+.feat{
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;gap:0;
+  min-height:520px;
+}
+.feat.flip{direction:rtl}
+.feat.flip>*{direction:ltr}
+.feat-phone{
+  padding:64px 60px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--surface);
+  min-height:520px;
+}
+.feat.flip .feat-phone{border-right:none;border-left:none}
+.feat-text{padding:64px 72px}
+.feat-n{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim);margin-bottom:20px}
+.feat-h{font-family:var(--ff-serif);font-size:clamp(1.5rem,2.8vw,2.4rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:18px}
+.feat-h em{font-style:italic;color:var(--accent)}
+.feat-p{font-size:.9rem;line-height:1.78;color:var(--text-mid)}
+.feat-p strong{color:var(--text);font-family:var(--ff-sans);font-weight:500}
+
+/* CSS Phone */
+.cphone{
+  width:220px;background:#0d0c10;
+  border-radius:40px;border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 32px 64px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.cp-notch{width:72px;height:22px;background:#0d0c10;border-radius:0 0 14px 14px;margin:0 auto;position:relative;z-index:2}
+.cp-screen{padding:0 0 24px}
+
+/* Shared screen atoms */
+.cp-bar{background:rgba(139,92,246,.1);border-bottom:1px solid rgba(139,92,246,.12);padding:10px 16px;display:flex;align-items:center;gap:7px}
+.cp-bar-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}
+.cp-bar-txt{font-family:var(--ff-mono);font-size:6.5px;color:var(--accent);letter-spacing:.1em}
+.cp-pad{padding:12px 16px;display:flex;flex-direction:column;gap:7px}
+.cp-bubble{border-radius:10px;padding:8px 10px;font-family:var(--ff-mono);font-size:6.5px;line-height:1.5}
+.cp-bubble.ai{background:rgba(139,92,246,.15);color:rgba(245,242,238,.85);border-bottom-left-radius:3px;max-width:85%}
+.cp-bubble.me{background:rgba(245,242,238,.08);color:rgba(245,242,238,.6);border-bottom-right-radius:3px;margin-left:auto;max-width:72%}
+.cp-inp{margin:4px 16px 0;background:rgba(255,255,255,.05);border:1px solid rgba(139,92,246,.18);border-radius:8px;padding:7px 10px;display:flex;align-items:center;justify-content:space-between}
+.cp-inp-ph{font-family:var(--ff-mono);font-size:6px;color:rgba(245,242,238,.25)}
+.cp-inp-btn{width:16px;height:16px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff}
+.cp-row{padding:7px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.cp-row-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cp-row-dot.on{background:var(--accent)}
+.cp-row-dot.off{background:transparent;border:1.5px solid rgba(255,255,255,.15)}
+.cp-row-txt{font-family:var(--ff-mono);font-size:6.5px;color:rgba(245,242,238,.6)}
+.cp-row-txt.on{color:rgba(245,242,238,.9)}
+.cp-card{margin:7px 16px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.15);border-radius:8px;padding:8px 10px}
+.cp-card-lbl{font-family:var(--ff-mono);font-size:5.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(139,92,246,.8);margin-bottom:4px}
+.cp-card-val{font-family:var(--ff-mono);font-size:8px;color:rgba(245,242,238,.9)}
+.cp-section-lbl{font-family:var(--ff-mono);font-size:5.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,242,238,.3);padding:6px 16px 4px}
+.cp-service-item{margin:4px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:7px 9px;display:flex;align-items:center;justify-content:space-between}
+.cp-service-name{font-family:var(--ff-mono);font-size:6.5px;color:rgba(245,242,238,.7)}
+.cp-service-status{font-family:var(--ff-mono);font-size:5.5px;color:var(--accent);padding:2px 6px;background:rgba(139,92,246,.12);border-radius:3px}
+.cp-qa{display:flex;flex-wrap:wrap;gap:5px;padding:6px 16px}
+.cp-qa-btn{font-family:var(--ff-mono);font-size:5.5px;padding:4px 8px;border-radius:4px;border:1px solid rgba(139,92,246,.3);color:rgba(139,92,246,.9);background:rgba(139,92,246,.06)}
+.cp-toggle-row{margin:8px 16px;background:rgba(255,255,255,.04);border-radius:8px;padding:3px;display:flex}
+.cp-toggle-opt{flex:1;text-align:center;font-family:var(--ff-mono);font-size:6px;padding:5px;border-radius:6px;color:rgba(245,242,238,.4)}
+.cp-toggle-opt.on{background:var(--accent);color:#fff}
+.cp-cms-header{background:rgba(255,255,255,.04);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.04)}
+.cp-cms-ttl{font-family:var(--ff-mono);font-size:6.5px;color:rgba(245,242,238,.5)}
+.cp-cms-btn{font-family:var(--ff-mono);font-size:5.5px;padding:3px 7px;background:var(--accent);border-radius:3px;color:#fff}
+.cp-cms-block{margin:5px 16px;border-radius:5px;overflow:hidden}
+.cp-cms-lbl-row{background:rgba(255,255,255,.04);padding:5px 8px;font-family:var(--ff-mono);font-size:5.5px;color:rgba(245,242,238,.35);display:flex;justify-content:space-between}
+.cp-cms-content{background:rgba(139,92,246,.08);padding:7px 8px;font-family:var(--ff-mono);font-size:6px;color:rgba(245,242,238,.6);line-height:1.4}
+
+/* Last section border */
+.feat:last-child{border-bottom:1px solid var(--border)}
+
+/* Discovery */
+#discovery{padding:100px 80px;display:flex;flex-direction:column;align-items:center}
+.disc-inner{width:100%;max-width:1100px}
+.disc-eyebrow{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.disc-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.disc-h{font-family:var(--ff-serif);font-size:clamp(1.6rem,2.8vw,2.6rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:40px}
+.disc-sh{font-family:var(--ff-serif);font-size:clamp(1.2rem,2vw,1.8rem);line-height:1.15;letter-spacing:-.01em;margin-bottom:8px;color:var(--text)}
+.disc-sh-sub{font-size:.88rem;color:var(--text-dim);margin-bottom:28px;font-family:var(--ff-sans)}
+.disc-body{font-size:.95rem;line-height:1.82;color:var(--text-mid)}
+.disc-body p{margin-bottom:24px}
+.disc-body p:last-child{margin-bottom:0}
+.disc-body p strong{color:var(--text);font-weight:500;font-family:var(--ff-sans)}
+.disc-img-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:40px 0;width:100%;max-width:1100px}
+.disc-img-row img{width:100%;display:block;border-radius:10px}
+.disc-placeholder{background:var(--surface);border-radius:12px;height:320px;display:flex;align-items:center;justify-content:center;margin:40px 0;font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);border:1px dashed var(--border-hi);width:100%;max-width:1100px}
+.disc-quote-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0;width:100%;max-width:1100px}
+.disc-qcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative}
+.disc-qcard::before{content:'\201C';font-family:var(--ff-serif);font-size:3rem;color:var(--accent);opacity:.4;position:absolute;top:10px;left:18px;line-height:1}
+.disc-qcard-text{font-family:var(--ff-serif);font-size:.95rem;font-style:italic;color:var(--text-mid);line-height:1.6;padding-top:28px}
+.disc-point{margin-bottom:32px}
+.disc-point p{margin-bottom:0}
+.disc-flow{width:100%;max-width:1100px;margin:28px 0 40px;display:flex;align-items:stretch;gap:0}
+.disc-flow-step{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.disc-flow-step:not(:last-child)::after{content:'→';position:absolute;right:-10px;top:18px;color:var(--text-dim);font-size:.9rem;z-index:1}
+.disc-flow-dot{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border-hi);display:flex;align-items:center;justify-content:center;font-family:var(--ff-mono);font-size:.55rem;color:var(--accent);font-weight:500;margin-bottom:10px;flex-shrink:0}
+.disc-flow-lbl{font-family:var(--ff-sans);font-size:.72rem;color:var(--text-mid);line-height:1.4}
+.disc-close{width:100%;max-width:1100px;margin-top:48px;padding:36px;background:var(--surface);border-radius:16px;border:1px solid var(--border)}
+.disc-close p{font-size:.95rem;line-height:1.82;color:var(--text-mid);margin-bottom:16px}
+.disc-close p:last-child{margin-bottom:0}
+.disc-close strong{color:var(--text);font-weight:600;font-family:var(--ff-sans)}
+
+/* Decisions + Portal + Closing */
+#decisions,#portal,#closing{padding:100px 80px;display:flex;flex-direction:column;align-items:center}
+.dec-inner,.por-inner,.clos-inner{width:100%;max-width:1100px}
+.sec-eyebrow{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.sec-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.dec-section{width:100%;max-width:1100px;margin-bottom:80px}
+.dec-section:last-child{margin-bottom:0}
+.dec-num{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.dec-h{font-family:var(--ff-serif);font-size:clamp(1.4rem,2.4vw,2.2rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:6px;color:var(--text)}
+.dec-phase{display:inline-block;font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px;margin-bottom:28px}
+.dec-body,.por-body,.clos-body{font-size:.95rem;line-height:1.82;color:var(--text-mid);margin-bottom:24px}
+.dec-body p,.por-body p,.clos-body p{margin-bottom:20px}
+.dec-body p:last-child,.por-body p:last-child,.clos-body p:last-child{margin-bottom:0}
+.dec-body strong,.por-body strong,.clos-body strong{color:var(--text);font-weight:500;font-family:var(--ff-sans)}
+/* Placeholder slots */
+.dec-slot,.por-slot,.clos-slot{background:var(--surface2);border:1.5px dashed var(--border-hi);border-radius:12px;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:28px 0;gap:10px;width:100%}
+.dec-slot.tall,.clos-slot.tall{min-height:420px}
+.slot-icon{width:34px;height:34px;border:1.5px solid var(--border-hi);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text-dim)}
+.slot-lbl{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);text-align:center;max-width:240px;line-height:1.7}
+.dec-2,.por-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0;width:100%}
+.dec-2 .dec-slot,.por-2 .por-slot{margin:0;min-height:220px}
+/* Conflicts */
+.dec-conflict{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0;width:100%}
+.dec-conflict-card{padding:24px;border-radius:12px;border:1px solid var(--border)}
+.dec-conflict-card.bad{background:rgba(239,68,68,.04);border-color:rgba(239,68,68,.15)}
+.dec-conflict-card.bad .dec-conflict-lbl{color:rgba(239,68,68,.8)}
+.dec-conflict-lbl{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.dec-conflict-text{font-size:.88rem;line-height:1.6;color:var(--text-mid)}
+.dec-quote,.por-quote{border-left:2px solid var(--accent);padding:4px 0 4px 20px;margin:28px 0;font-family:var(--ff-serif);font-size:1.1rem;color:var(--text);font-style:italic;line-height:1.5}
+/* Drawn: Flow compare */
+.dec-fc{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:28px 0;width:100%}
+.dec-fc-col{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.dec-fc-hdr{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;padding:12px 18px;font-weight:500}
+.dec-fc-hdr.bef{background:rgba(239,68,68,.06);color:rgba(239,68,68,.8);border-bottom:1px solid rgba(239,68,68,.12)}
+.dec-fc-hdr.aft{background:rgba(139,92,246,.06);color:var(--accent);border-bottom:1px solid rgba(139,92,246,.12)}
+.dec-fc-steps{padding:14px 18px;display:flex;flex-direction:column;gap:0}
+.dec-fc-step{font-family:var(--ff-sans);font-size:.8rem;color:var(--text-mid);padding:9px 12px;border-radius:7px;background:var(--surface2);border:1px solid var(--border)}
+.dec-fc-step.acc{color:#fff;background:var(--accent);border-color:transparent}
+.dec-fc-arr{text-align:center;color:var(--text-dim);font-size:.7rem;padding:3px 0}
+.dec-fc-arr.acc{color:var(--accent)}
+/* Drawn: Stepper */
+.dec-stepper{display:flex;align-items:center;margin:28px 0;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px}
+.dec-stp{display:flex;flex-direction:column;align-items:center;flex:1}
+.dec-stp-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border-hi);display:flex;align-items:center;justify-content:center;font-family:var(--ff-mono);font-size:.62rem;color:var(--text-dim);margin-bottom:8px;background:var(--bg)}
+.dec-stp-dot.act{border-color:var(--accent);background:var(--accent);color:#fff}
+.dec-stp-lbl{font-family:var(--ff-sans);font-size:.78rem;color:var(--text-dim);text-align:center}
+.dec-stp-lbl.act{color:var(--text);font-weight:500}
+.dec-stp-line{flex:1;height:2px;background:var(--border);margin-bottom:24px}
+.dec-stp-line.act{background:var(--accent)}
+/* Drawn: Workflow */
+.dec-wf{display:flex;align-items:center;margin:28px 0;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px}
+.dec-wf-step{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.dec-wf-box{padding:9px 12px;background:var(--surface2);border:1px solid var(--border-hi);border-radius:8px;font-family:var(--ff-sans);font-size:.78rem;color:var(--text);font-weight:500;margin-bottom:5px;white-space:nowrap}
+.dec-wf-sub{font-family:var(--ff-mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.dec-wf-arr{color:var(--accent);font-size:1rem;margin-bottom:24px;flex-shrink:0;padding:0 4px}
+/* Drawn: Before/After card */
+.dec-ba{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:28px 0;width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.dec-ba-col.bef{padding:28px;background:rgba(239,68,68,.03);border-right:1px solid rgba(239,68,68,.1)}
+.dec-ba-col.aft{padding:28px;background:rgba(34,197,94,.03)}
+.dec-ba-hdr{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:18px;font-weight:500}
+.dec-ba-hdr.bef{color:rgba(239,68,68,.7)}
+.dec-ba-hdr.aft{color:rgba(34,197,94,.85)}
+.dec-ba-item{display:flex;align-items:flex-start;gap:9px;font-family:var(--ff-sans);font-size:.85rem;color:var(--text-mid);margin-bottom:12px;line-height:1.4}
+.dec-ba-item::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dec-ba-col.bef .dec-ba-item::before{background:rgba(239,68,68,.55)}
+.dec-ba-col.aft .dec-ba-item::before{background:rgba(34,197,94,.8)}
+/* Drawn: Metrics */
+.dec-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0;width:100%}
+.dec-metric{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;text-align:center}
+.dec-metric-val{font-family:var(--ff-serif);font-size:clamp(2rem,4vw,3.2rem);color:var(--accent);line-height:1;margin-bottom:10px}
+.dec-metric-lbl{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim)}
+/* Portal section headings */
+.por-h{font-family:var(--ff-serif);font-size:clamp(1.6rem,2.8vw,2.6rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:24px;color:var(--text)}
+.por-intro{font-size:.95rem;line-height:1.82;color:var(--text-mid);margin-bottom:52px}
+.por-sub{width:100%;max-width:1100px;margin-bottom:60px}
+.por-sub-h{font-family:var(--ff-serif);font-size:clamp(1.2rem,2vw,1.7rem);line-height:1.15;letter-spacing:-.01em;margin-bottom:14px;color:var(--text)}
+/* Closing */
+.clos-final{font-family:var(--ff-serif);font-size:clamp(1.15rem,2vw,1.55rem);color:var(--text);line-height:1.6;margin-top:52px;padding-top:48px;border-top:1px solid var(--border)}
+
+/* PROJECT NAV */
+#proj-nav{padding:80px 80px;background:var(--bg2);border-top:1px solid var(--border)}
+.proj-nav-lbl{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:24px}
+.proj-nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1100px}
+.proj-card{border:1px solid var(--border);border-radius:12px;padding:24px;transition:border-color .2s,background .2s;display:block}
+.proj-card:hover{border-color:var(--accent);background:var(--surface)}
+.proj-card.act{border-color:var(--accent);background:rgba(139,92,246,.04)}
+.proj-card-n{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.proj-card-n.act{color:var(--accent)}
+.proj-card-h{font-family:var(--ff-serif);font-size:1.1rem;color:var(--text);margin-bottom:6px}
+.proj-card-sub{font-family:var(--ff-sans);font-size:.82rem;color:var(--text-mid)}
+
+/* FAB */
+#fab{position:fixed;bottom:28px;right:28px;z-index:600;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.fab-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border-hi);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--text-mid);font-size:.8rem}
+.fab-btn:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.1)}
+
+/* REVEAL */
+[data-r]{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+[data-r].in{opacity:1;transform:translateY(0)}
+[data-r][data-d="1"]{transition-delay:.1s}[data-r][data-d="2"]{transition-delay:.2s}
+[data-r][data-d="3"]{transition-delay:.3s}[data-r][data-d="4"]{transition-delay:.4s}
+
+/* LIGHT */
+body.light{--bg:#ffffff;--bg2:#f8f8f8;--surface:#f2f2f2;--surface2:#ebebeb;--text:#111111;--text-dim:#999999;--text-mid:#555555;--border:rgba(0,0,0,.07);--border-hi:rgba(0,0,0,.12)}
+
+/* ── MOBILE BAR ── */
+#mob-bar{display:none;position:fixed;top:0;left:0;right:0;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:1100;align-items:center;justify-content:space-between;padding:0 16px}
+#mob-bar-btn{background:none;border:none;cursor:none;padding:8px;color:var(--text);display:flex;align-items:center;border-radius:6px;transition:color .2s}
+#mob-bar-btn:hover{color:var(--accent)}
+#mob-theme-bar{background:none;border:none;cursor:none;padding:8px;color:var(--text);display:flex;align-items:center;border-radius:6px;transition:color .2s}
+#mob-theme-bar:hover{color:var(--accent)}
+.mob-bar-title{font-family:var(--ff-sans);font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--text)}
+#mob-overlay{position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+#mob-overlay.active{opacity:1;pointer-events:all}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  #mob-bar{display:flex}
+  #side-nav{left:calc(-1 * var(--side-w) - 20px);top:52px;height:calc(100vh - 52px);transition:left .3s cubic-bezier(.4,0,.2,1);z-index:1080;display:flex!important}
+  #side-nav.mob-open{left:0;box-shadow:8px 0 32px rgba(0,0,0,.25)}
+  #main{margin-left:0;margin-top:52px}
+  #sprog{left:0;top:52px}
+  .glance-grid{grid-template-columns:1fr 1fr}
+  .meta-row{grid-template-columns:1fr 1fr;row-gap:24px}
+  .dec-2,.por-2{grid-template-columns:1fr}
+  .hero-visual-band{height:220px}
+  .hero-text-band{padding:40px 24px}
+  .disc-inner,.dec-inner,.por-inner,.clos-inner{padding-left:24px;padding-right:24px}
+  .dec-section{padding:40px 24px}
+  .por-sub{padding:40px 24px}
+  #proj-nav{padding:40px 24px}
+  .dec-fc{grid-template-columns:1fr;gap:20px}
+}
+@media(max-width:600px){
+  .hero-visual-band{height:160px}
+  .hero-text-band{padding:28px 16px}
+  .hero-title{font-size:clamp(1.6rem,6vw,2.4rem)}
+  .disc-inner,.dec-inner,.por-inner,.clos-inner{padding-left:16px;padding-right:16px}
+  .dec-section{padding:28px 16px}
+  .por-sub{padding:28px 16px}
+  #proj-nav{padding:28px 16px}
+  .meta-row{grid-template-columns:1fr}
+  .glance-grid{grid-template-columns:1fr}
+  .dec-stepper{flex-wrap:wrap;gap:8px}
+  .dec-stp-line{display:none}
+  .dec-metrics{grid-template-columns:1fr 1fr}
+  .dec-ba{grid-template-columns:1fr;gap:12px}
+  .dec-wf{flex-wrap:wrap;gap:12px}
+  .dec-conflict{grid-template-columns:1fr}
+  .proj-nav-grid{grid-template-columns:1fr!important}
+  .hero-tags{gap:6px}
+  #fab{bottom:16px;right:16px}
+}
+@media(max-width:480px){
+  .hero-title{font-size:1.5rem}
+  .hero-text-band{padding:20px 14px}
+  .dec-section{padding:24px 14px}
+  .disc-inner,.dec-inner,.por-inner,.clos-inner{padding-left:14px;padding-right:14px}
+  .dec-metrics{grid-template-columns:1fr}
+  .meta-row{gap:10px}
+}
+/* LIGHTBOX */
+#img-modal{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;cursor:zoom-out}
+#img-modal.open{opacity:1;pointer-events:all}
+#img-modal img{max-width:90vw;max-height:90vh;width:auto;height:auto;transform:scale(.97);transition:transform .3s ease;display:block}
+#img-modal.open img{transform:scale(1)}
+</style>
+</head>
+<body class="light">
+<div id="cur"></div><div id="cur-r"></div>
+<div id="sprog"></div>
+
+<!-- MOBILE BAR -->
+<div id="mob-bar">
+  <button id="mob-bar-btn" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="mob-bar-title">Brian Higgins</span>
+  <button id="mob-theme-bar" aria-label="Toggle theme">
+    <svg id="mob-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="mob-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</div>
+<div id="mob-overlay"></div>
+
+<!-- SIDE NAV -->
+<nav id="side-nav">
+  <div class="sn-name">Brian<br/>Higgins</div>
+  <a href="home.html?skip=1" class="sn-back">
+    <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L2 5l4 3"/></svg>
+    Home
+  </a>
+  <div class="sn-links">
+    <a href="#hero" class="sn-a active">Overview</a>
+    <a href="#discovery" class="sn-a">Discovery</a>
+    <a href="#define" class="sn-a">Define</a>
+    <a href="#decisions" class="sn-a">Decisions</a>
+    <a href="#portal" class="sn-a">Customer Portal</a>
+    <a href="#closing" class="sn-a">Closing</a>
+  </div>
+</nav>
+
+<div id="main">
+
+  <!-- ═══ HERO ═══ -->
+  <section id="hero">
+
+    <!-- Floating card -->
+    <div class="hero-visual-band">
+      <img src="case1images/intro.png" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">
+    </div>
+
+    <!-- Text intro -->
+    <div class="hero-text-band">
+      <div class="hero-badge" data-r>
+        <img src="7986387-200.png" width="20" height="20" style="flex-shrink:0;filter:invert(39%) sepia(80%) saturate(500%) hue-rotate(220deg) brightness(90%)" alt=""/>
+        <b>Customer Portal</b> — by AMCS
+      </div>
+
+      <h1 class="hero-h1" data-r data-d="1">
+        <span class="lo">Designing an </span><strong>AI-Driven Customer Hub</strong><br>
+        <span class="lo" style="display:block">From Static Portal to Intelligent Assistant</span>
+      </h1>
+
+      <div class="hero-tags" data-r data-d="2">
+        <span class="hero-tag">UX Research</span>
+        <span class="hero-tag">AI Design</span>
+        <span class="hero-tag">Enterprise</span>
+        <span class="hero-tag">Product</span>
+      </div>
+
+      <div class="glance-grid" data-r data-d="4">
+        <div class="glance-body">
+          <p>The AMCS Customer Portal is a next-generation platform designed to help customers sign up, manage container-based collection services, and handle billing for materials management in a faster, more intuitive way. I led the transformation of the experience from an outdated, low-adoption portal into an AI-driven product that rethinks how users interact with complex service systems.</p>
+          <p>What began as a UX redesign uncovered deeper challenges — manual onboarding processes and heavy reliance on support teams. The project evolved into a complete end-to-end reimagining, introducing an intelligent assistant that guides users, automates key steps, and enables instant access to services.</p>
+        </div>
+        <div class="glance-img">
+          <img src="case1images/introimg.png" alt="Customer Hub interface"/>
+        </div>
+      </div>
+
+      <div class="meta-row" data-r data-d="4">
+        <div class="mc">
+          <div class="mc-label">My Role</div>
+          <div class="mc-val">UX Researcher<br>UX Designer<br>Product Builder</div>
+        </div>
+        <div class="mc">
+          <div class="mc-label">Company</div>
+          <div class="mc-val">AMCS Group<br>Enterprise Software<br>Ireland &amp; Global</div>
+        </div>
+        <div class="mc">
+          <div class="mc-label">Timeline</div>
+          <div class="mc-val">Jan 2025 – Present<br>Phase 1: UX Redesign<br>Phase 2: AI Transformation</div>
+        </div>
+        <div class="mc">
+          <div class="mc-label">Tools</div>
+          <div class="mc-val">Figma<br>Claude Code<br>Condens</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HIGHLIGHTS ═══ -->
+  <section id="highlights">
+    <div class="hl-intro" data-r>
+      <div class="hl-eyebrow"><div class="hl-eyebrow-dot"></div>Highlights</div>
+      <h2 class="hl-h2">AI-Driven Customer Hub:<br><em>Fully automated, personalised</em></h2>
+      <p class="hl-desc">A next-generation, AI-powered self-service platform that transforms how customers sign up, manage, and interact with their material management services. Moving beyond traditional portals, the experience replaces static navigation and form-heavy journeys with an intelligent assistant that guides users, automates complex decisions, and adapts in real time.</p>
+    </div>
+
+    <div class="feat-list">
+
+      <!-- 1: AI Signup — phone left -->
+      <div class="feat">
+        <div class="feat-phone" style="background:#ffffff">
+          <img src="case1images/highlight1.png" alt="AI-Guided Signup" style="width:300px;display:block;">
+        </div>
+        <div class="feat-text" data-r>
+          <div class="feat-h">AI-Guided Signup</div>
+          <div class="feat-p">Users are onboarded through an intelligent assistant that guides them step-by-step, removing the need for complex forms and manual setup. The system validates information, recommends services, and <strong>creates accounts instantly.</strong></div>
+        </div>
+      </div>
+
+      <!-- 2: Dashboard — phone right -->
+      <div class="feat flip">
+        <div class="feat-phone" style="background:#ffffff">
+          <img src="case1images/highlight2.png" alt="Personalised Customer Dashboard" style="width:300px;display:block;">
+        </div>
+        <div class="feat-text" data-r>
+          <div class="feat-h">Personalised Customer Dashboard</div>
+          <div class="feat-p">Each user lands in a tailored dashboard that surfaces relevant information — active services, billing, and upcoming collections. <strong>Designed to reduce navigation and surface what matters most.</strong></div>
+        </div>
+      </div>
+
+      <!-- 3: AI Assistant — phone left -->
+      <div class="feat">
+        <div class="feat-phone" style="background:#ffffff">
+          <img src="case1images/highlight3.png" alt="AI Assistant for Everyday Tasks" style="width:300px;display:block;">
+        </div>
+        <div class="feat-text" data-r>
+          <div class="feat-h">AI Assistant for Everyday Tasks</div>
+          <div class="feat-p">An integrated AI assistant allows users to interact with the platform using intent rather than navigation. Users can quickly pay bills, update services, or check collection schedules through <strong>guided prompts or natural input.</strong></div>
+        </div>
+      </div>
+
+      <!-- 4: Mode Switching — phone right -->
+      <div class="feat flip">
+        <div class="feat-phone" style="background:#ffffff">
+          <div class="cphone" style="width:260px;box-shadow:none">
+            <div class="cp-notch"></div>
+            <img src="case1images/highlight4.gif" alt="Seamless Mode Switching" style="width:100%;display:block;">
+          </div>
+        </div>
+        <div class="feat-text" data-r>
+          <div class="feat-h">Seamless Mode Switching</div>
+          <div class="feat-p">Users can move between structured UI and AI-driven interactions at any point. <strong>Combining clarity with flexibility</strong> depending on the task or preference — no loss of context when switching between modes.</div>
+        </div>
+      </div>
+
+      <!-- 5: CMS — phone left -->
+      <div class="feat">
+        <div class="feat-phone" style="background:#ffffff">
+          <img src="case1images/highlight5.png" alt="Built-in CMS for Operators" style="width:100%;display:block;">
+        </div>
+        <div class="feat-text" data-r>
+          <div class="feat-h">Built-in CMS for Operators</div>
+          <div class="feat-p">Operators can customise the portal experience through an integrated CMS — controlling branding, content, and customer-facing communication. <strong>No development changes required.</strong></div>
+        </div>
+      </div>
+
+      <!-- 6: Mobile — phone right -->
+      <div class="feat flip">
+        <div class="feat-phone" style="background:#ffffff">
+          <img src="case1images/highlight6.png" alt="Designed for Real-World Use" style="width:100%;display:block;">
+        </div>
+        <div class="feat-text" data-r>
+          <div class="feat-h">Designed for Real-World Use</div>
+          <div class="feat-p">Built with a mobile-first approach and grounded in real user behaviour. The platform ensures <strong>accessibility and usability across devices</strong> — for homeowners and business owners managing their services on the go.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ DISCOVERY ═══ -->
+  <section id="discovery">
+    <div class="disc-inner">
+      <div class="disc-eyebrow"><div class="disc-eyebrow-dot"></div>Discovery</div>
+      <div class="disc-h" data-r>Understanding Why the Original Portal Failed</div>
+      <div class="disc-body">
+        <p>At first glance, the issue looked visual. Outdated screens, inconsistent layouts, unclear navigation. But after reviewing the full experience end to end, the real problem ran much deeper.</p>
+        <p><strong>The product wasn't just difficult to use. It was difficult to trust.</strong></p>
+        <p>I ran discovery workshops and brainstorming sessions with users and internal stakeholders to understand where frustration peaked, how people approached onboarding, and which parts of the portal they actively avoided. Stakeholder sessions surfaced the operational pain points and manual dependencies shaping the experience behind the scenes. Together they created a clear picture of both the user frustrations and the business challenges driving them.</p>
+      </div>
+    </div>
+
+    <div class="disc-img-row" data-r>
+      <img src="case1images/miro1.png" alt="Workshop session">
+      <img src="case1images/miro2.png" alt="Brainstorming session">
+      <img src="case1images/miro3.png" alt="Discovery workshop">
+    </div>
+
+    <div class="disc-inner" data-r>
+      <div class="disc-sh">What Users Actually Said</div>
+      <div class="disc-sh-sub">Real frustrations captured during sessions — not summaries, not interpretations.</div>
+    </div>
+
+    <div class="disc-quote-grid" data-r>
+      <div class="disc-qcard"><div class="disc-qcard-text">As a new customer, I didn't know how to create an account.</div></div>
+      <div class="disc-qcard"><div class="disc-qcard-text">I completed the form but nothing happened. I didn't know if it worked.</div></div>
+      <div class="disc-qcard"><div class="disc-qcard-text">I couldn't tell which services were actually available at my location.</div></div>
+      <div class="disc-qcard"><div class="disc-qcard-text">I gave up and called support. The portal just wasn't clear enough to trust.</div></div>
+    </div>
+
+    <div class="disc-inner">
+      <div class="disc-body">
+        <p>From these sessions I was able to narrow the problems down to four core issues.</p>
+      </div>
+    </div>
+
+    <div class="disc-inner"><img src="case1images/originallanding.png" alt="Original portal landing page" data-r style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);"></div>
+
+    <div class="disc-inner">
+      <div class="disc-body">
+        <div class="disc-point" data-r>
+          <p><strong>01. No clear entry point</strong> — users landed on a page with disconnected actions and no obvious path for new customers. There was no clear place to begin, and no clear way to create an account.</p>
+        </div>
+        <div class="disc-point" data-r>
+          <p><strong>02. A flow that created more questions than answers</strong> — services were shown before location was confirmed, meaning users were choosing from options that might not even be available to them. The journey felt long, repetitive, and gave no sense of progress.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="disc-inner" data-r>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0;">
+        <img src="case1images/service 1.png" alt="Service selection screen 1" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        <img src="case1images/service 2.png" alt="Service selection screen 2" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+      </div>
+    </div>
+
+    <div class="disc-inner">
+      <div class="disc-body">
+        <div class="disc-point" data-r>
+          <p><strong>03. Manual handover breaking digital flow</strong> — completing the form wasn't the end of onboarding, it was the beginning of a wait. Here is what that actually looked like:</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="disc-flow" data-r>
+      <div class="disc-flow-step">
+        <div class="disc-flow-dot">01</div>
+        <div class="disc-flow-lbl">User submits form</div>
+      </div>
+      <div class="disc-flow-step">
+        <div class="disc-flow-dot">02</div>
+        <div class="disc-flow-lbl">Operator manually reviews</div>
+      </div>
+      <div class="disc-flow-step">
+        <div class="disc-flow-dot">03</div>
+        <div class="disc-flow-lbl">Routes assigned</div>
+      </div>
+      <div class="disc-flow-step">
+        <div class="disc-flow-dot">04</div>
+        <div class="disc-flow-lbl">Services approved</div>
+      </div>
+      <div class="disc-flow-step">
+        <div class="disc-flow-dot">05</div>
+        <div class="disc-flow-lbl">Credentials sent</div>
+      </div>
+      <div class="disc-flow-step">
+        <div class="disc-flow-dot">06</div>
+        <div class="disc-flow-lbl">User gains access</div>
+      </div>
+    </div>
+
+    <div class="disc-inner">
+      <div class="disc-body">
+        <p>The most important moment in the experience was also the most broken. A digital product was still running on manual handover.</p>
+        <div class="disc-point" data-r style="margin-top:32px">
+          <p><strong>04. Trust didn't recover inside the portal</strong> — once users were eventually granted access, inconsistent layouts, disconnected sections, and the absence of a design system meant confidence continued to erode page by page.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="disc-inner" data-r>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0;">
+        <img src="case1images/incon1.png" alt="Inconsistent portal screen 1" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        <img src="case1images/incon2.png" alt="Inconsistent portal screen 2" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        <img src="case1images/incon3.png" alt="Inconsistent portal screen 3" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+      </div>
+    </div>
+
+    <div class="disc-close" data-r>
+      <p>After eight years in market, only two active customers remained.</p>
+      <p><strong>This gave me a clear focus. Fix onboarding first. Then redesign the system around user independence, not operator dependency.</strong></p>
+    </div>
+  </section>
+
+  <!-- ═══ DECISIONS ═══ -->
+  <section id="decisions">
+    <div class="dec-inner">
+      <div class="sec-eyebrow"><div class="sec-eyebrow-dot"></div>Decisions</div>
+    </div>
+
+    <!-- 01 -->
+    <div class="dec-section" data-r>
+      <div class="dec-num">01</div>
+      <div class="dec-h">Rebuilding Trust Through Structure</div>
+      <div class="dec-phase">Phase 1</div>
+      <div class="dec-body">
+        <p>Before any AI could work, the foundations had to be solid. The original Customer Portal had no design system, no consistent patterns, and no clear navigation. Users didn't trust it because it didn't behave like a product that had been thought through.</p>
+        <p>The first phase wasn't glamorous. It was about fixing what should have been right from the start.</p>
+        <p>I built a full design system from the ground up. Components, spacing, hierarchy, interaction patterns — everything standardised so the product felt like one thing rather than a collection of disconnected screens. The onboarding journey was redesigned into a clear linear flow, the landing page simplified, and navigation restructured so users could immediately understand where to go and what to do next.</p>
+      </div>
+      <div class="dec-2">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:3px 10px;">Original</span>
+          </div>
+          <img src="case1images/originallanding.png" alt="Old Customer Portal landing page" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:100px;padding:3px 10px;">Phase 1</span>
+          </div>
+          <img src="case1images/newlanding.png" alt="New redesigned landing page" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        </div>
+      </div>
+      <div class="dec-2">
+        <img src="case1images/ds.png" alt="Design system overview" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        <img src="case1images/ds1.png" alt="Design system components" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+      </div>
+      <!-- Original flow -->
+      <div style="margin:32px 0;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <span style="font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px;white-space:nowrap;">Original Flow</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr;align-items:center;gap:0 4px;margin-bottom:16px;">
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">01</div><img src="case1images/originallanding.png" alt="Landing" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#999"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">02</div><img src="case1images/service 1.png" alt="Services" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#999"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">03</div><img src="case1images/service 2.png" alt="Location" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr;align-items:center;gap:0 4px;">
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">04</div><img src="case1images/CART.png" alt="Cart" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#999"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">05</div><img src="case1images/form.png" alt="Form" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:#999"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">06</div><img src="case1images/order.png" alt="Order" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        </div>
+      </div>
+      <!-- Phase 1 flow -->
+      <div style="margin:32px 0;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <span style="font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:100px;padding:4px 12px;white-space:nowrap;">Phase 1</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr;align-items:center;gap:0 4px;margin-bottom:16px;">
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">01</div><img src="case1images/phase11.png" alt="Phase 1 step 1" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">02</div><img src="case1images/phase12.png" alt="Phase 1 step 2" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">03</div><img src="case1images/phase13.png" alt="Phase 1 step 3" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr;align-items:center;gap:0 4px;">
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">04</div><img src="case1images/phase14.png" alt="Phase 1 step 4" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">05</div><img src="case1images/phase15.png" alt="Phase 1 step 5" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">06</div><img src="case1images/phase16.png" alt="Phase 1 step 6" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        </div>
+      </div>
+      <div class="dec-body">
+        <p>Testing after Phase 1 showed real improvement. Users could orient themselves. They understood the flow. Drop-off reduced.</p>
+        <p>But one problem remained. Users still couldn't complete onboarding without an operator stepping in. Better design had taken us as far as it could. The system itself needed to change.</p>
+        <p><strong>That was the turning point for Phase 2.</strong></p>
+      </div>
+      <!-- Drawn: Before vs After flow -->
+      <div class="dec-fc">
+        <div class="dec-fc-col">
+          <div class="dec-fc-hdr bef">Before</div>
+          <div class="dec-fc-steps">
+            <div class="dec-fc-step">Land on page</div>
+            <div class="dec-fc-arr">↓</div>
+            <div class="dec-fc-step">Browse services</div>
+            <div class="dec-fc-arr">↓</div>
+            <div class="dec-fc-step">Submit form</div>
+            <div class="dec-fc-arr">↓</div>
+            <div class="dec-fc-step">Wait for operator</div>
+            <div class="dec-fc-arr">↓</div>
+            <div class="dec-fc-step">Receive credentials</div>
+            <div class="dec-fc-arr">↓</div>
+            <div class="dec-fc-step">Access granted</div>
+          </div>
+        </div>
+        <div class="dec-fc-col">
+          <div class="dec-fc-hdr aft">After</div>
+          <div class="dec-fc-steps">
+            <div class="dec-fc-step acc">Search company</div>
+            <div class="dec-fc-arr acc">↓</div>
+            <div class="dec-fc-step acc">Confirm location</div>
+            <div class="dec-fc-arr acc">↓</div>
+            <div class="dec-fc-step acc">AI recommends services</div>
+            <div class="dec-fc-arr acc">↓</div>
+            <div class="dec-fc-step acc">Pricing generated</div>
+            <div class="dec-fc-arr acc">↓</div>
+            <div class="dec-fc-step acc">Account created instantly</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div class="dec-section" data-r>
+      <div class="dec-num">02</div>
+      <div class="dec-h">From Forms to Guided Decisions</div>
+      <div class="dec-phase">Phase 2</div>
+      <div class="dec-body">
+        <p>The biggest bottleneck in the experience wasn't the interface. It was the decision-making the interface forced onto users.</p>
+        <p>Before they could sign up, users had to know their service type, their container size, their collection frequency. They were browsing options that might not even be available at their location. The system was asking for expertise users didn't have, then making them wait while an operator validated everything anyway.</p>
+        <p>Improving the forms wasn't going to fix this. The process itself was the problem.</p>
+      </div>
+      <div class="dec-body">
+        <p>The AI assistant changed the model entirely. Instead of users selecting from a catalogue, the assistant asks simple questions and makes the complex decisions in the background. The user confirms their company, their location is identified, services are recommended based on their business type, and pricing is generated in real time. No technical knowledge required. No waiting.</p>
+        <p><strong>The goal was never to make onboarding feel like a chat. It was to make hard decisions feel effortless.</strong></p>
+      </div>
+      <!-- Phase 2 flow -->
+      <div style="margin:32px 0;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <span style="font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:100px;padding:4px 12px;white-space:nowrap;">Phase 2</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr;align-items:center;gap:0 4px;margin-bottom:16px;">
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">01</div><img src="case1images/p21.png" alt="Phase 2 step 1" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">02</div><img src="case1images/p22.png" alt="Phase 2 step 2" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">03</div><img src="case1images/p23.png" alt="Phase 2 step 3" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        </div>
+        <div style="display:flex;justify-content:center;">
+          <div style="display:grid;grid-template-columns:1fr 32px 1fr;align-items:center;gap:0 4px;width:67%;">
+            <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">04</div><img src="case1images/p24.png" alt="Phase 2 step 4" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+            <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">05</div><img src="case1images/p25.png" alt="Phase 2 step 5" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Drawn: Stepper -->
+      <div class="dec-stepper">
+        <div class="dec-stp"><div class="dec-stp-dot act">1</div><div class="dec-stp-lbl act">Company</div></div>
+        <div class="dec-stp-line act"></div>
+        <div class="dec-stp"><div class="dec-stp-dot act">2</div><div class="dec-stp-lbl act">Location</div></div>
+        <div class="dec-stp-line act"></div>
+        <div class="dec-stp"><div class="dec-stp-dot">3</div><div class="dec-stp-lbl">Services</div></div>
+        <div class="dec-stp-line"></div>
+        <div class="dec-stp"><div class="dec-stp-dot">4</div><div class="dec-stp-lbl">Confirm</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 32px 1fr;align-items:center;gap:0 4px;margin:32px 0;">
+        <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">Location</div><img src="case1images/loc.png" alt="Location selection" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+        <div style="display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="rgba(139,92,246,.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:5px;">Services</div><img src="case1images/ser.png" alt="Service recommendation" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+      </div>
+    </div>
+
+    <!-- 03 -->
+    <div class="dec-section" data-r>
+      <div class="dec-num">03</div>
+      <div class="dec-h">Designing AI Beyond Chat</div>
+      <div class="dec-body">
+        <p>The first version of the AI assistant was too close to a traditional chatbot. Long responses, no visible structure, and a blank input field that put all the pressure on the user to know what to say next.</p>
+        <p>Testing surfaced two things quickly. Users felt uncertain about progress — without any sense of where they were in the process, the conversation felt open-ended and risky, especially when it got to pricing and payment. Users also disengaged from heavy text responses. Reading through a paragraph to find the one piece of information they needed created fatigue fast.</p>
+      </div>
+      <div class="dec-conflict">
+        <div class="dec-conflict-card bad">
+          <div class="dec-conflict-lbl">Conflict A</div>
+          <div class="dec-conflict-text">A pure chat interface is flexible but creates no sense of structure or safety.</div>
+        </div>
+        <div class="dec-conflict-card bad">
+          <div class="dec-conflict-lbl">Conflict B</div>
+          <div class="dec-conflict-text">A traditional form is structured but kills the intelligence that makes AI useful.</div>
+        </div>
+      </div>
+      <div style="margin:28px 0;width:100%;"><div style="font-family:var(--ff-mono);font-size:.55rem;color:var(--text-dim);margin-bottom:8px;">First AI</div><img src="case1images/1stai.png" alt="First AI interface" style="width:100%;border-radius:8px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.10);"></div>
+      <div class="dec-body">
+        <p>The solution was a hybrid. AI handling the thinking, structured UI carrying the experience.</p>
+        <p>I introduced a stepper so users always knew where they were. An order summary panel updated in real time as decisions were made, so nothing felt hidden. Cards, maps, and comparison tables replaced long text responses wherever the information was complex. Quick action buttons reduced the need to type. And every step was editable, so users could adjust without restarting.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin:28px -60px 28px 0;align-items:start;">
+        <img src="case1images/hybrid.png" alt="Hybrid AI interface" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);">
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;padding-right:60px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="var(--accent)" stroke-width="1.2"/><path d="M8 8l2.5 2.5" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <span style="font-family:var(--ff-mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);">Detail</span>
+          </div>
+          <div style="border:1.5px solid rgba(139,92,246,.3);border-radius:12px;padding:6px;background:rgba(139,92,246,.03);">
+            <img src="case1images/ordersum.png" alt="Order summary panel detail" style="max-height:600px;width:auto;border-radius:8px;display:block;">
+          </div>
+        </div>
+      </div>
+      <div class="dec-quote">"I like how the order summary is there now — it keeps me on track."</div>
+      <div class="dec-body">
+        <p>The experience stopped feeling like talking to a machine and started feeling like being guided through something familiar. That was the shift.</p>
+      </div>
+    </div>
+
+    <!-- 04 -->
+    <div class="dec-section" data-r>
+      <div class="dec-num">04</div>
+      <div class="dec-h">Designing With AI, Not Just For AI</div>
+      <div class="dec-body">
+        <p>Phase 2 changed more than the product. It changed how I worked.</p>
+        <p>Using Claude Code, I connected our design system through MCPs and built a workflow where design, testing, and development moved at a pace that wasn't possible before. Instead of designing screens in Figma, handing them to developers, and waiting for a build to test, I was generating interactive coded UI directly, using design system rules, UX documentation, and component patterns as the foundation.</p>
+      </div>
+      <img src="case1images/claude.png" alt="Claude Code workflow" style="width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);margin:28px 0;">
+      <div class="dec-body">
+        <p>I also built UX agents trained on our own internal guidelines and principles. These agents generate first-pass UI that already respects our standards, which meant less time fixing basics and more time making real design decisions.</p>
+        <p>The output wasn't prototype-quality work that needed rebuilding. It was near-production code that developers could take and integrate directly. Design iteration time dropped by around 80%. A concept that previously took close to a week to get into a testable state could be validated in a single day.</p>
+      </div>
+      <!-- Drawn: Workflow -->
+      <div class="dec-wf">
+        <div class="dec-wf-step"><div class="dec-wf-box">Design System</div><div class="dec-wf-sub">Figma + tokens</div></div>
+        <div class="dec-wf-arr">→</div>
+        <div class="dec-wf-step"><div class="dec-wf-box">Claude Code</div><div class="dec-wf-sub">MCP integration</div></div>
+        <div class="dec-wf-arr">→</div>
+        <div class="dec-wf-step"><div class="dec-wf-box">Interactive Prototype</div><div class="dec-wf-sub">Coded UI, same day</div></div>
+        <div class="dec-wf-arr">→</div>
+        <div class="dec-wf-step"><div class="dec-wf-box">Developer Handover</div><div class="dec-wf-sub">Near-production code</div></div>
+      </div>
+      <div class="dec-body">
+        <p>My role shifted. Less time producing screens, more time shaping how the system thinks and how the experience behaves. That felt like a more honest description of what good product design actually is.</p>
+      </div>
+    </div>
+
+    <!-- 05 -->
+    <div class="dec-section" data-r>
+      <div class="dec-num">05</div>
+      <div class="dec-h">From Portal to Product</div>
+      <div class="dec-body">
+        <p>Phase 1 made the experience usable. Phase 2 made the business model viable.</p>
+        <p>The original Customer Portal required operator time to onboard every single customer. That was a ceiling. Growth was limited not by demand but by the capacity of internal teams to manually process signups. A digital product that depended on human handover at its most critical moment was never going to scale.</p>
+      </div>
+      <!-- Drawn: Before/After summary -->
+      <div class="dec-ba">
+        <div class="dec-ba-col bef">
+          <div class="dec-ba-hdr bef">Before</div>
+          <div class="dec-ba-item">Manual operator steps required</div>
+          <div class="dec-ba-item">15–24 min signup journey</div>
+          <div class="dec-ba-item">Support dependent for onboarding</div>
+          <div class="dec-ba-item">Access granted days later</div>
+          <div class="dec-ba-item">2 active customers after 8 years</div>
+        </div>
+        <div class="dec-ba-col aft">
+          <div class="dec-ba-hdr aft">After</div>
+          <div class="dec-ba-item">Fully automated onboarding</div>
+          <div class="dec-ba-item">Under 5 min target signup time</div>
+          <div class="dec-ba-item">Self-service from first interaction</div>
+          <div class="dec-ba-item">Instant account access</div>
+          <div class="dec-ba-item">No operator dependency</div>
+        </div>
+      </div>
+      <div class="dec-body">
+        <p>The new Customer Portal removes that ceiling entirely. Onboarding is instant. Services are recommended rather than manually selected. Account access is granted the moment signup is complete. Support is no longer a dependency for standard tasks.</p>
+      </div>
+      <!-- Drawn: Metrics -->
+      <div class="dec-metrics">
+        <div class="dec-metric"><div class="dec-metric-val">~5 min</div><div class="dec-metric-lbl">Target signup time</div></div>
+        <div class="dec-metric"><div class="dec-metric-val">80%</div><div class="dec-metric-lbl">Faster design iteration</div></div>
+        <div class="dec-metric"><div class="dec-metric-val">0</div><div class="dec-metric-lbl">Operator steps in onboarding</div></div>
+      </div>
+      <div class="dec-body">
+        <p>The redesign stopped being a UX project somewhere along the way. It became a product strategy. One that changed what the platform could offer, who could use it, and how fast it could grow.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CUSTOMER PORTAL ═══ -->
+  <section id="portal">
+    <div class="por-inner">
+      <div class="sec-eyebrow"><div class="sec-eyebrow-dot"></div>Customer Portal</div>
+      <div class="por-h" data-r>Customer Portal</div>
+      <div class="por-intro">The AI assistant handles onboarding. But the product it leads into had to earn the same level of trust. Once users complete signup they land in a fully self-service Customer Portal. Every task that previously required a support call — modifying a service, downloading an invoice, updating payment details, checking a collection schedule — is handled directly inside the product. The same design system and interaction principles from onboarding carry through into every section, so nothing feels disconnected once users are inside.</div>
+      <img src="case1images/dashboard.png" alt="Customer Portal dashboard" style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);" data-r>
+    </div>
+
+    <div class="por-sub" data-r>
+      <div class="por-sub-h">Services</div>
+      <div class="por-body"><p>Users can view active services, request changes, and add new collections without speaking to anyone. The AI assistant extends into this flow too. Rather than navigating through menus, users can express what they need and the system responds accordingly.</p></div>
+      <img src="case1images/services.png" alt="Services screen" style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);" data-r>
+    </div>
+
+    <div class="por-sub" data-r>
+      <div class="por-sub-h">Billing and Payments</div>
+      <div class="por-body"><p>Invoices, payment history, and upcoming charges are surfaced clearly with no ambiguity. A persistent payment summary mirrors the order summary from onboarding — same pattern, same logic, familiar from the moment users first used the product.</p></div>
+      <img src="case1images/billing.png" alt="Billing screen" style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);" data-r>
+    </div>
+
+    <div class="por-sub" data-r>
+      <div class="por-sub-h">The CMS</div>
+      <div class="por-body"><p>Operators needed to be able to configure and brand the Customer Portal for their own customers without engineering involvement. So we built a CMS that gives them direct control over branding, content, and portal settings.</p></div>
+      <img src="case1images/cms.png" alt="CMS interface" style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);" data-r>
+      <div class="por-body"><p>This meant the Customer Portal wasn't just a product for end users. It became a configurable tool that operators could deploy and maintain themselves, reducing their dependency on development resource and giving them genuine ownership of the experience they were offering their customers.</p></div>
+      <img src="case1images/cms2.png" alt="Branded portal" style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);" data-r>
+    </div>
+  </section>
+
+  <!-- ═══ CLOSING ═══ -->
+  <section id="closing">
+    <div class="clos-inner">
+      <div class="sec-eyebrow"><div class="sec-eyebrow-dot"></div>Closing</div>
+      <div class="clos-body" data-r>
+        <p>The Customer Portal is still being built. There are screens still being refined, edge cases still being designed for, and production integrations still being completed. That's the honest state of it.</p>
+        <p>But what exists already demonstrates something worth saying out loud. The AI assistant wasn't added to an existing product to make it feel modern. It was the solution to a structural problem that better design alone couldn't fix. The hybrid interaction model, the order summary panel, the design system that Claude Code generates against — none of it happened by following a standard UX process. It happened by being willing to change how we worked, not just what we made.</p>
+      </div>
+      <img src="case1images/intro.png" alt="Customer Hub hero" style="width:100%;border-radius:12px;display:block;margin:28px 0;box-shadow:0 8px 40px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.08);" data-r>
+      <div class="clos-body" data-r>
+        <p>Phase 1 gave users a product they could actually use. Phase 2 gave them a product that does the hard work for them. The difference between those two things is bigger than it sounds.</p>
+        <p>This project is still running. But it has already changed what I think good design work looks like, and what I think a designer's job actually is.</p>
+      </div>
+      <div class="clos-final" data-r>This project is still running. But it has already changed what I think good design work looks like, and what I think a designer's job actually is.</div>
+    </div>
+  </section>
+
+  <div id="proj-nav">
+    <div class="proj-nav-lbl">All work</div>
+    <div class="proj-nav-grid">
+      <a href="case-01.html" class="proj-card act">
+        <div class="proj-card-n act">Project 01</div>
+        <div class="proj-card-h">AI-Driven Customer Hub</div>
+        <div class="proj-card-sub">From Static Portal to Intelligent Assistant</div>
+      </a>
+      <a href="case-02.html" class="proj-card">
+        <div class="proj-card-n">Project 02</div>
+        <div class="proj-card-h">AMCS Next Gen Mobile</div>
+        <div class="proj-card-sub">Rethinking Route Navigation While on the Road</div>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FAB -->
+<div id="fab">
+  <button class="fab-btn" id="theme-toggle" title="Toggle theme">
+    <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <button class="fab-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+</div>
+
+<script>
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+document.querySelectorAll('a,button,.feat-text,.cp-qa-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+(function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(tick);})();
+
+const sprog=document.getElementById('sprog');
+window.addEventListener('scroll',()=>{
+  sprog.style.transform=`scaleX(${window.scrollY/(document.documentElement.scrollHeight-window.innerHeight)})`;
+},{passive:true});
+
+const ro=new IntersectionObserver(e=>e.forEach(i=>{if(i.isIntersecting){i.target.classList.add('in');ro.unobserve(i.target);}}),{threshold:0.08});
+document.querySelectorAll('[data-r]').forEach(el=>ro.observe(el));
+
+const navLinks=document.querySelectorAll('.sn-a');
+const no=new IntersectionObserver(e=>e.forEach(i=>{
+  if(i.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+i.target.id));
+}),{rootMargin:'-40% 0px -40% 0px'});
+document.querySelectorAll('section[id]').forEach(s=>no.observe(s));
+
+const tb=document.getElementById('theme-toggle');
+const iconSun=document.getElementById('icon-sun');
+const iconMoon=document.getElementById('icon-moon');
+const mobIconSun=document.getElementById('mob-icon-sun');
+const mobIconMoon=document.getElementById('mob-icon-moon');
+function applyTheme(light){
+  document.body.classList.toggle('light',light);
+  if(iconSun) iconSun.style.display=light?'':'none';
+  if(iconMoon) iconMoon.style.display=light?'none':'';
+  if(mobIconSun) mobIconSun.style.display=light?'':'none';
+  if(mobIconMoon) mobIconMoon.style.display=light?'none':'';
+}
+applyTheme(localStorage.getItem('bh-theme')!=='dark');
+tb.addEventListener('click',()=>{const isLight=document.body.classList.contains('light');applyTheme(!isLight);localStorage.setItem('bh-theme',!isLight?'light':'dark');});
+var mobThemeBar=document.getElementById('mob-theme-bar');
+if(mobThemeBar) mobThemeBar.addEventListener('click',()=>{const isLight=document.body.classList.contains('light');applyTheme(!isLight);localStorage.setItem('bh-theme',!isLight?'light':'dark');});
+
+/* Mobile nav toggle */
+(function(){
+  var ham=document.getElementById('mob-bar-btn');
+  var nav=document.getElementById('side-nav');
+  var overlay=document.getElementById('mob-overlay');
+  function openNav(){nav.classList.add('mob-open');overlay.classList.add('active');document.body.style.overflow='hidden';}
+  function closeNav(){nav.classList.remove('mob-open');overlay.classList.remove('active');document.body.style.overflow='';}
+  if(ham) ham.addEventListener('click',openNav);
+  if(overlay) overlay.addEventListener('click',closeNav);
+  document.querySelectorAll('#side-nav .sn-a, #side-nav .sn-back').forEach(function(a){a.addEventListener('click',closeNav);});
+})();
+
+var vp=document.getElementById('view-proto');if(vp)vp.addEventListener('click',()=>window.open('customerhub.html','_blank'));
+
+/* Lightbox */
+(function(){
+  var modal = document.createElement('div'); modal.id = 'img-modal';
+  var mImg = document.createElement('img'); modal.appendChild(mImg);
+  document.body.appendChild(modal);
+  document.querySelectorAll('#main img').forEach(function(img){
+    if(img.closest('.hero-visual-band')) return;
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function(e){
+      e.stopPropagation();
+      mImg.src = img.src; mImg.alt = img.alt;
+      modal.classList.add('open');
+    });
+  });
+  modal.addEventListener('click', function(){ modal.classList.remove('open'); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') modal.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>
